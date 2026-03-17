@@ -1,0 +1,3222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>杀戮尖塔2 - 冒险日志</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        abyss: {
+                            900: '#0a0a0f',
+                            800: '#0f0f1a',
+                            700: '#1a1a2e',
+                            600: '#16213e',
+                        },
+                        spire: {
+                            gold: '#f59e0b',
+                            'gold-light': '#fbbf24',
+                            crimson: '#dc2626',
+                            'crimson-dark': '#991b1b',
+                            purple: '#7c3aed',
+                            'purple-light': '#8b5cf6',
+                            teal: '#14b8a6',
+                            blue: '#3b82f6',
+                        }
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Base styles */
+        body {
+            background: linear-gradient(135deg, #0a0a0f 0%, #0f0f1a 50%, #1a1a2e 100%);
+            min-height: 100vh;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(245, 158, 11, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(245, 158, 11, 0.5);
+        }
+        
+        /* Glass card effect */
+        .glass-card {
+            background: rgba(30, 27, 75, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .glass-card-hover:hover {
+            background: rgba(30, 27, 75, 0.5);
+            border-color: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 8px 40px rgba(245, 158, 11, 0.15);
+        }
+        
+        /* Victory card */
+        .glass-card.victory {
+            border-color: rgba(20, 184, 166, 0.3);
+        }
+        .glass-card.victory:hover {
+            border-color: rgba(20, 184, 166, 0.5);
+            box-shadow: 0 8px 40px rgba(20, 184, 166, 0.15);
+        }
+        
+        /* Defeat card */
+        .glass-card.defeat {
+            border-color: rgba(220, 38, 38, 0.3);
+        }
+        .glass-card.defeat:hover {
+            border-color: rgba(220, 38, 38, 0.5);
+            box-shadow: 0 8px 40px rgba(220, 38, 38, 0.15);
+        }
+        
+        /* Upload area */
+        .upload-zone {
+            background: rgba(30, 27, 75, 0.2);
+            border: 2px dashed rgba(245, 158, 11, 0.3);
+            transition: all 0.3s ease;
+        }
+        .upload-zone:hover {
+            background: rgba(245, 158, 11, 0.05);
+            border-color: rgba(245, 158, 11, 0.6);
+        }
+        .upload-zone.dragover {
+            background: rgba(20, 184, 166, 0.1);
+            border-color: rgba(20, 184, 166, 0.6);
+        }
+        
+        /* Button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Filter buttons */
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .filter-btn.active {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.5);
+            color: #fbbf24;
+        }
+        
+        /* Timeline styles */
+        .timeline-item {
+            position: relative;
+            padding-left: 24px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .timeline-item.boss::before { background: #dc2626; box-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
+        .timeline-item.elite::before { background: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+        .timeline-item.combat::before { background: #ef4444; }
+        .timeline-item.event::before { background: #3b82f6; }
+        .timeline-item.rest::before { background: #14b8a6; }
+        .timeline-item.shop::before { background: #8b5cf6; }
+        
+        /* Item icon */
+        .item-icon {
+            transition: all 0.2s ease;
+        }
+        .item-icon:hover {
+            transform: scale(1.15);
+            z-index: 10;
+        }
+        
+        /* Modal animation */
+        .modal-overlay {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        
+        /* Stat number animation */
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stat-value {
+            animation: countUp 0.5s ease forwards;
+        }
+        
+        /* Glow effects */
+        .glow-gold {
+            text-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+        }
+        .glow-crimson {
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
+        }
+        .glow-teal {
+            text-shadow: 0 0 20px rgba(20, 184, 166, 0.5);
+        }
+        
+        /* Loading spinner */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Card entrance animation */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.4s ease forwards;
+        }
+        
+        /* Tooltip styles */
+        .tooltip {
+            position: fixed;
+            z-index: 9999;
+            max-width: 280px;
+            background: rgba(15, 15, 26, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(245, 158, 11, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(8px) scale(0.95);
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+        .tooltip.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        .tooltip-title {
+            font-weight: 600;
+            color: #fbbf24;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        .tooltip-type {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .tooltip-desc {
+            font-size: 13px;
+            color: #e2e8f0;
+            line-height: 1.5;
+        }
+        .tooltip-rarity {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .tooltip-rarity.common { background: #94a3b8; }
+        .tooltip-rarity.uncommon { background: #14b8a6; }
+        .tooltip-rarity.rare { background: #f59e0b; }
+        .tooltip-rarity.special { background: #dc2626; }
+    </style>
+</head>
+<body class="text-slate-200 font-sans antialiased">
+    <!-- Background decoration -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-spire-purple/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-spire-gold/5 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip">
+        <div class="tooltip-title" id="tooltipTitle"></div>
+        <div class="tooltip-type" id="tooltipType"></div>
+        <div class="tooltip-desc" id="tooltipDesc"></div>
+    </div>
+
+    <div class="relative min-h-screen">
+        <!-- Header -->
+        <header class="pt-8 pb-6 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto">
+                <div class="glass-card rounded-2xl p-6 sm:p-8 text-center">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-spire-gold/10 border border-spire-gold/30 text-spire-gold text-xs font-medium mb-4">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                        100% 本地处理 - 数据不会上传
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-spire-gold via-spire-gold-light to-spire-gold bg-clip-text text-transparent mb-3">
+                        杀戮尖塔2
+                    </h1>
+                    <p class="text-slate-400 text-lg mb-4">冒险日志 · 存档分析器</p>
+                    
+                    <!-- 加载分享码按钮 -->
+                    <button id="loadSeedBtn" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-spire-gold/20 text-spire-gold hover:bg-spire-gold/30 transition-colors border border-spire-gold/30 relative z-10 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
+                        加载分享码
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Upload Section -->
+        <section id="uploadSection" class="px-4 sm:px-6 lg:px-8 pb-8">
+            <div class="max-w-3xl mx-auto">
+                <div class="upload-zone rounded-2xl p-8 sm:p-12 text-center cursor-pointer" id="uploadArea">
+                    <input type="file" id="fileInput" multiple accept=".run" class="hidden">
+                    <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-spire-gold/10 flex items-center justify-center">
+                        <svg class="w-10 h-10 text-spire-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-2">拖拽存档文件到此处</h3>
+                    <p class="text-slate-400 mb-6">或点击选择多个 .run 文件</p>
+                    <div class="flex flex-wrap justify-center gap-2 text-xs text-slate-500">
+                        <span class="px-2 py-1 rounded bg-white/5">支持多文件</span>
+                        <span class="px-2 py-1 rounded bg-white/5">.run 格式</span>
+                        <span class="px-2 py-1 rounded bg-white/5">自动解析</span>
+                    </div>
+                </div>
+                
+                <!-- OS-specific controls -->
+                <div id="osControls" class="mt-6">
+                    <!-- Windows: Auto detect -->
+                    <div id="windowsControls" class="hidden">
+                        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                            <button id="autoDetectBtn" class="btn-primary inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-medium text-white">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                自动检测本地存档
+                            </button>
+                            <a id="openFolderWin" href="#" class="btn-secondary inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-medium text-slate-300">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/>
+                                </svg>
+                                打开存档文件夹
+                            </a>
+                        </div>
+                        <p class="mt-3 text-xs text-center text-slate-500">
+                            自动检测需要浏览器支持，或手动拖拽文件到上方区域
+                        </p>
+                    </div>
+                    
+                    <!-- macOS: Path guidance -->
+                    <div id="macControls" class="hidden">
+                        <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-spire-gold flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div class="text-sm text-slate-400 flex-1">
+                                    <p class="mb-2"><span class="text-slate-300 font-medium">快速打开：</span>点击复制路径，然后在访达中 <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-spire-gold font-mono text-xs">Cmd</kbd>+<kbd class="px-1.5 py-0.5 rounded bg-white/10 text-spire-gold font-mono text-xs">Shift</kbd>+<kbd class="px-1.5 py-0.5 rounded bg-white/10 text-spire-gold font-mono text-xs">G</kbd> 粘贴</p>
+                                    <div class="flex gap-2">
+                                        <code id="macPath" class="flex-1 p-2 rounded-lg bg-black/30 text-xs text-slate-300 font-mono break-all">~/Library/Application Support/SlayTheSpire2</code>
+                                        <button onclick="copyMacPath()" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-xs text-slate-300 transition-colors flex items-center gap-1">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                            </svg>
+                                            复制
+                                        </button>
+                                    </div>
+                                    <p class="mt-2 text-xs text-slate-500">然后选中所有 .run 文件拖拽到上方区域，或点击下方按钮快速前往</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex justify-center">
+                            <a id="openFolderMac" href="#" target="_blank" class="btn-secondary inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-slate-300">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/>
+                                </svg>
+                                尝试打开存档文件夹
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Linux/Other -->
+                    <div id="linuxControls" class="hidden">
+                        <div class="p-4 rounded-xl bg-white/5 border border-white/10 text-center">
+                            <p class="text-sm text-slate-400">
+                                请手动选择存档文件，或拖拽文件到上方区域<br>
+                                <span class="text-xs text-slate-500">Steam 运行通常位于 ~/.local/share/Steam/steamapps/compatdata/.../pfx/drive_c/</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Panel -->
+        <section id="statsPanel" class="hidden px-4 sm:px-6 lg:px-8 pb-8">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Total Games -->
+                    <div class="glass-card rounded-xl p-5 text-center">
+                        <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="text-2xl font-bold text-white stat-value" id="totalGames">-</div>
+                        <div class="text-xs text-slate-400 mt-1">总游戏局数</div>
+                    </div>
+                    
+                    <!-- Win Rate -->
+                    <div class="glass-card rounded-xl p-5 text-center">
+                        <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-spire-teal/10 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-spire-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                            </svg>
+                        </div>
+                        <div class="text-2xl font-bold text-spire-teal stat-value" id="winRate">-</div>
+                        <div class="text-xs text-slate-400 mt-1">胜率</div>
+                    </div>
+                    
+                    <!-- Avg Floor -->
+                    <div class="glass-card rounded-xl p-5 text-center">
+                        <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-spire-crimson/10 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-spire-crimson" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                        <div class="text-2xl font-bold text-spire-crimson stat-value" id="avgFloor">-</div>
+                        <div class="text-xs text-slate-400 mt-1">平均层数</div>
+                    </div>
+                    
+                    <!-- Avg Relics -->
+                    <div class="glass-card rounded-xl p-5 text-center">
+                        <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-spire-purple/10 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-spire-purple-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+                            </svg>
+                        </div>
+                        <div class="text-2xl font-bold text-spire-purple-light stat-value" id="avgRelics">-</div>
+                        <div class="text-xs text-slate-400 mt-1">平均遗物</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters -->
+        <section id="filters" class="hidden px-4 sm:px-6 lg:px-8 pb-6">
+            <div class="max-w-7xl mx-auto flex flex-wrap justify-center gap-4">
+                <!-- Profile Selector (shown when multiple profiles) -->
+                <div id="profileSelector" class="hidden"></div>
+                
+                <!-- View Switcher -->
+                <div class="flex gap-2 p-1 rounded-lg bg-white/5 border border-white/10">
+                    <button id="viewLocalBtn" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${localRuns.length > 0 ? 'bg-spire-gold/20 text-spire-gold' : 'text-slate-400'}" onclick="switchView('local')">
+                        本地存档 (${localRuns.length})
+                    </button>
+                    <button id="viewSharedBtn" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${sharedRuns.length > 0 ? 'bg-spire-gold/20 text-spire-gold' : 'text-slate-400'}" onclick="switchView('shared')">
+                        分享码 (${sharedRuns.length})
+                    </button>
+                    <button id="viewAllBtn" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-slate-400" onclick="switchView('all')">
+                        全部
+                    </button>
+                </div>
+                
+                <!-- Filter Buttons -->
+                <div class="flex gap-2">
+                    <button class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium" data-filter="all">
+                        全部
+                    </button>
+                    <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5" data-filter="victory">
+                        <svg class="w-4 h-4 text-spire-teal" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        胜利
+                    </button>
+                    <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5" data-filter="defeat">
+                        <svg class="w-4 h-4 text-spire-crimson" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        失败
+                    </button>
+                </div>
+                
+                <!-- Re-upload Button -->
+                <button onclick="showReuploadDialog()" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-spire-gold hover:bg-spire-gold/10 transition-colors flex items-center gap-1.5" title="重新上传存档">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    <span>重新上传</span>
+                </button>
+                
+                <!-- Clear Cache Button -->
+                <button onclick="clearCurrentViewCache()" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-spire-crimson hover:bg-spire-crimson/10 transition-colors" title="清除当前视图缓存">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- Runs List -->
+        <section id="runsList" class="px-4 sm:px-6 lg:px-8 pb-12">
+            <div class="max-w-7xl mx-auto">
+                <!-- Loading state -->
+                <div id="loadingState" class="hidden text-center py-16">
+                    <div class="w-12 h-12 mx-auto mb-4 rounded-full border-2 border-spire-gold/30 border-t-spire-gold spinner"></div>
+                    <p class="text-slate-400">解析存档中...</p>
+                </div>
+                
+                <!-- Empty state -->
+                <div id="emptyState" class="text-center py-16">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/5 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    <p class="text-slate-500">选择存档文件开始分析</p>
+                </div>
+                
+                <!-- Cards container -->
+                <div id="cardsContainer" class="grid gap-4"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="modal-overlay fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm overflow-y-auto">
+        <div class="modal-content w-full max-w-4xl my-8">
+            <div class="glass-card rounded-2xl overflow-hidden">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b border-white/10">
+                    <h2 id="modalTitle" class="text-xl font-bold text-white">存档详情</h2>
+                    <button onclick="closeModal()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Modal Body -->
+                <div id="modalBody" class="p-6 max-h-[70vh] overflow-y-auto">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Seed Input Modal -->
+    <div id="seedModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="modal-content w-full max-w-md">
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-white">加载分享码</h2>
+                    <button onclick="closeSeedModal()" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <p class="text-sm text-slate-400 mb-4">输入以 <code class="text-spire-gold">STS2</code> 开头的分享码</p>
+                
+                <textarea 
+                    id="seedInput" 
+                    class="w-full p-4 rounded-xl bg-black/30 border border-white/10 text-white font-mono text-sm resize-none focus:outline-none focus:border-spire-gold/50 focus:ring-1 focus:ring-spire-gold/30"
+                    rows="4"
+                    placeholder="STS2..."
+                ></textarea>
+                
+                <p id="seedError" class="hidden mt-3 text-sm text-spire-crimson flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    无效的分享码，请检查是否正确复制
+                </p>
+                
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closeSeedModal()" class="flex-1 py-3 rounded-xl bg-white/10 text-slate-300 hover:bg-white/15 transition-colors text-sm font-medium">
+                        取消
+                    </button>
+                    <button onclick="submitSeed()" class="flex-1 py-3 rounded-xl bg-spire-gold text-black hover:opacity-90 transition-opacity text-sm font-medium">
+                        加载
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="game-data.js"></script>
+    <script src="data/game-index.js"></script>
+    <script>
+        // 游戏数据存储
+        let GAME_DATA_CACHE = null;
+        
+        // 异步加载游戏数据
+        async function loadGameData() {
+            if (GAME_DATA_CACHE) return GAME_DATA_CACHE;
+            
+            try {
+                const response = await fetch('data/game-data.json');
+                if (!response.ok) throw new Error('Failed to load game data');
+                GAME_DATA_CACHE = await response.json();
+                console.log('[GameData] Loaded:', 
+                    Object.keys(GAME_DATA_CACHE.cards).length, 'cards,',
+                    Object.keys(GAME_DATA_CACHE.relics).length, 'relics'
+                );
+                return GAME_DATA_CACHE;
+            } catch (err) {
+                console.error('[GameData] Failed to load:', err);
+                // 返回空数据作为 fallback
+                return { cards: {}, relics: {} };
+            }
+        }
+        
+        // 名称到ID的映射（用于反向查找）
+        let NAME_TO_ID_MAP = null;
+        
+        function buildNameToIdMap() {
+            if (NAME_TO_ID_MAP || !GAME_DATA_CACHE) return;
+            
+            NAME_TO_ID_MAP = { cards: {}, relics: {} };
+            
+            // 建立卡牌名称映射
+            for (const [id, data] of Object.entries(GAME_DATA_CACHE.cards)) {
+                if (data.name) {
+                    NAME_TO_ID_MAP.cards[data.name] = id;
+                }
+            }
+            
+            // 建立遗物名称映射
+            for (const [id, data] of Object.entries(GAME_DATA_CACHE.relics)) {
+                if (data.name) {
+                    NAME_TO_ID_MAP.relics[data.name] = id;
+                }
+            }
+            
+            console.log('[GameData] Name map built:', 
+                Object.keys(NAME_TO_ID_MAP.cards).length, 'cards,',
+                Object.keys(NAME_TO_ID_MAP.relics).length, 'relics'
+            );
+        }
+        
+        // 获取物品数据
+        function getItemData(id, isCard = false) {
+            if (!GAME_DATA_CACHE) return null;
+            
+            // 建立名称映射（如果还没有）
+            if (!NAME_TO_ID_MAP) {
+                buildNameToIdMap();
+            }
+            
+            // 尝试直接通过ID查找
+            const key = id?.toUpperCase().replace(/^(CARD|RELIC)\./, '');
+            const data = isCard 
+                ? GAME_DATA_CACHE.cards[key]
+                : GAME_DATA_CACHE.relics[key];
+            
+            if (data) return data;
+            
+            // 如果没找到，尝试通过名称反向查找
+            if (NAME_TO_ID_MAP) {
+                const mappedId = isCard 
+                    ? NAME_TO_ID_MAP.cards[id]
+                    : NAME_TO_ID_MAP.relics[id];
+                
+                if (mappedId) {
+                    return isCard 
+                        ? GAME_DATA_CACHE.cards[mappedId]
+                        : GAME_DATA_CACHE.relics[mappedId];
+                }
+            }
+            
+            return null;
+        }
+
+        // Tooltip 功能
+        const tooltip = document.getElementById('tooltip');
+        const tooltipTitle = document.getElementById('tooltipTitle');
+        const tooltipType = document.getElementById('tooltipType');
+        const tooltipDesc = document.getElementById('tooltipDesc');
+
+        async function showTooltip(e, name, id, isCard = false, isUpgraded = false) {
+            // 确保数据已加载
+            if (!GAME_DATA_CACHE) {
+                await loadGameData();
+            }
+            
+            const data = getItemData(id, isCard);
+            
+            if (!data) {
+                console.log('[Tooltip] No data found for:', id, 'isCard:', isCard);
+                return;
+            }
+            
+            const typeMap = {
+                'attack': '攻击',
+                'skill': '技能',
+                'power': '能力',
+                'curse': '诅咒',
+                'status': '状态',
+                'relic': '遗物'
+            };
+            
+            const rarityMap = {
+                'common': '普通',
+                'uncommon': '罕见',
+                'rare': '稀有',
+                'boss': 'Boss',
+                'special': '特殊'
+            };
+            
+            // 升级标记
+            const upgradeMark = isUpgraded ? '<span class="text-spire-gold ml-1">+</span>' : '';
+            const upgradeBadge = isUpgraded ? '<span class="ml-2 px-1.5 py-0.5 rounded bg-spire-gold/20 text-spire-gold text-xs">已升级</span>' : '';
+            
+            tooltipTitle.innerHTML = `<span class="tooltip-rarity ${data.rarity}"></span>${data.name || name}${upgradeMark}${upgradeBadge}`;
+            tooltipType.textContent = `${typeMap[data.type] || data.type} · ${rarityMap[data.rarity] || data.rarity}`;
+            
+            // 显示升级后的效果（如果是升级状态）
+            if (isUpgraded && data.upgrade_desc) {
+                tooltipDesc.textContent = data.upgrade_desc;
+            } else {
+                tooltipDesc.textContent = data.desc || '';
+            }
+            
+            tooltip.classList.add('active');
+            updateTooltipPosition(e);
+            
+            console.log('[Tooltip] Showing:', data.name, isUpgraded ? '(upgraded)' : '', data);
+        }
+
+        function hideTooltip() {
+            tooltip.classList.remove('active');
+        }
+
+        function updateTooltipPosition(e) {
+            const x = e.clientX;
+            const y = e.clientY;
+            
+            // 防止 tooltip 超出屏幕
+            const rect = tooltip.getBoundingClientRect();
+            const winWidth = window.innerWidth;
+            const winHeight = window.innerHeight;
+            
+            let left = x + 15;
+            let top = y + 15;
+            
+            if (left + rect.width > winWidth) {
+                left = x - rect.width - 15;
+            }
+            if (top + rect.height > winHeight) {
+                top = y - rect.height - 15;
+            }
+            
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+        }
+
+        // 辅助函数 - 获取卡牌/遗物信息
+        function getCardName(id) {
+            if (!id) return '未知卡牌';
+            const cleanId = id.replace(/^CARD\./, '');
+            return GAME_DATA_CACHE?.cards?.[cleanId]?.name || cleanId;
+        }
+        
+        function getCardImage(id) {
+            if (!id) return null;
+            const cleanId = id.replace(/^CARD\./, '');
+            const card = GAME_DATA_CACHE?.cards?.[cleanId];
+            return card?.image ? `${IMAGE_BASE_URL}/${card.image}` : null;
+        }
+        
+        function getRelicName(id) {
+            if (!id) return '未知遗物';
+            const cleanId = id.replace(/^RELIC\./, '');
+            return GAME_DATA_CACHE?.relics?.[cleanId]?.name || cleanId;
+        }
+        
+        function getRelicImage(id) {
+            if (!id) return null;
+            const cleanId = id.replace(/^RELIC\./, '');
+            const relic = GAME_DATA_CACHE?.relics?.[cleanId];
+            return relic?.image ? `${IMAGE_BASE_URL}/${relic.image}` : null;
+        }
+        
+        // 分享码编解码系统 - 字节对齐格式 (更可靠)
+        // 使用固定字节长度，避免位操作带来的对齐问题
+        const SEED_PREFIX = 'STS2';
+        
+        // 敌人ID映射表 (用1字节存储索引 0-255)
+        const ENEMY_MAP = [
+            // 第1层 普通敌人 (0-19)
+            {id:'CULTIST', name:'邪教徒'}, {id:'JAW_WORM', name:'钳虫'}, {id:'LOUSE', name:'虱虫'},
+            {id:'FUNGUS_BEAST', name:'真菌兽'}, {id:'SLIME', name:'史莱姆'}, {id:'SPIKE_SLIME', name:'尖刺史莱姆'},
+            {id:'ACID_SLIME', name:'酸液史莱姆'}, {id:'GREMLIN', name:'地精'}, {id:'WOLF', name:'狼'},
+            {id:'PLANT', name:'植物'},
+            // ST2 新增第1层
+            {id:'CANNONEER', name:'高塔炮手'}, {id:'BOWLBUG_EGG', name:'盛碗虫'}, {id:'BOWLBUG_NECTAR', name:'盛碗虫'},
+            {id:'CHOMPER', name:'啃咬机'}, {id:'FAT_GREMLIN', name:'胖地精'}, {id:'NIBBIT', name:'小啃兽'},
+            {id:'MYTE', name:'异螨'}, {id:'SLUMBERING_BEETLE', name:'熟睡甲虫'}, {id:'SEWER_CLAM', name:'下水道蚌'},
+            {id:'INKLET', name:'墨宝'},
+            // 第1层 精英 (10-14)
+            {id:'GREMLIN_NOB', name:'地精首领'}, {id:'LAGAVULIN', name:'拉格瓦林'}, {id:'SENTRY', name:'哨卫'},
+            {id:'TASKMASTER', name:'监工'}, {id:'SLIME_BOSS', name:'史莱姆Boss'},
+            // 第2层 普通敌人 (20-39)
+            {id:'CHOSEN', name:'被选中者'}, {id:'BYRD', name:'鸟'}, {id:'SNECKO', name:'异蛇'},
+            {id:'CENTURION', name:'百夫长'}, {id:'MYSTIC', name:'神秘术士'}, {id:'SHELLED_PARASITE', name:'带壳寄生虫'},
+            {id:'SNAKE_PLANT', name:'蛇草'}, {id:'SPHERIC_GUARDIAN', name:'圆球守护者'},
+            {id:'SPIDER', name:'蜘蛛'}, {id:'THIEVES', name:'小偷'},
+            // ST2 新增第2层
+            {id:'ARCHITECT', name:'建筑师'}, {id:'ASSASSIN_RUBY_RAIDER', name:'劫掠者刺客'}, {id:'AXE_RUBY_RAIDER', name:'劫掠者斧手'},
+            {id:'BATTLE_FRIEND_V1', name:'战斗好伙伴V1'}, {id:'BYGONE_EFFIGY', name:'旧日雕像'}, {id:'CORPSE_SLUG', name:'噬尸蛞蝓'},
+            {id:'CROSSBOW_RUBY_RAIDER', name:'劫掠者弩手'}, {id:'FABRICATOR', name:'组装师'}, {id:'FROG_KNIGHT', name:'青蛙骑士'},
+            {id:'GAS_BOMB', name:'气态炸弹'}, {id:'HAUNTED_SHIP', name:'幽灵船'}, {id:'HUNTER_KILLER', name:'猎人杀手'},
+            {id:'PARAFRIGHT', name:'寄生惧魔'}, {id:'SEAPUNK', name:'海洋混混'}, {id:'SHRINKER_BEETLE', name:'缩小甲虫'},
+            {id:'SLITHERING_STRANGLER', name:'蛇行扼杀者'}, {id:'SLUDGE_SPINNER', name:'淤泥旋螺'}, {id:'FUZZY_WURM_CRAWLER', name:'毛绒伏地虫'},
+            {id:'LIVING_FOG', name:'活雾'},
+            // 第2层 精英 (25-29)
+            {id:'BOOK_OF_STABBING', name:'扎人书'}, {id:'GREMLIN_LEADER', name:'地精首领'}, 
+            {id:'TASKMASTER_2', name:'高级监工'}, {id:'BRONZE_AUTOMATON', name:'青铜 automaton'},
+            {id:'CHAMP', name:'冠军'},
+            // 第3层 普通敌人 (40-69)
+            {id:'DARKLING', name:'小黑'}, {id:'EXPLODER', name:'爆炸机'}, {id:'REPULSOR', name:'反击机'},
+            {id:'SPIKER', name:'尖刺机'}, {id:'WRITHING_MASS', name:'蠕动 mass'}, {id:'ORB_WALKER', name:'球体行者'},
+            {id:'REPTOMANCER', name:'养 repto 者'}, {id:'TRANSIENT', name:'瞬移者'},{id:'GIANT_HEAD', name:'大头'},
+            {id:'NEMESIS', name:'天罚'},
+            // ST2 新增第3层
+            {id:'CRUSHER', name:'碾碎爪'}, {id:'CUBEX_CONSTRUCT', name:'立柱构造体'}, {id:'DECIMILLIPEDE_SEGMENT', name:'残杀千足虫'},
+            {id:'DEVOTED_SCULPTOR', name:'虔诚雕刻师'}, {id:'EXOSKELETON', name:'外骨骼虫'}, {id:'EYE_WITH_TEETH', name:'利齿之眼'},
+            {id:'FLAIL_KNIGHT', name:'连枷骑士'}, {id:'FLYCONID', name:'飞蝇菌子'}, {id:'FOGMOG', name:'雾菇'},
+            {id:'FOSSIL_STALKER', name:'化石追踪者'}, {id:'GLOBE_HEAD', name:'电球头'}, {id:'GUARDBOT', name:'守护机器人'},
+            {id:'INFESTED_PRISM', name:'感染棱柱'}, {id:'KIN_FOLLOWER', name:'同族信徒'}, {id:'KIN_PRIEST', name:'同族神官'},
+            {id:'LAGAVULIN_MATRIARCH', name:'乐加维林族母'}, {id:'LOUSE_PROGENITOR', name:'虱虫之祖'}, {id:'MAGI_KNIGHT', name:'魔法骑士'},
+            {id:'MAWLER', name:'蛮兽'}, {id:'MECHA_KNIGHT', name:'机甲骑士'}, {id:'NOISEBOT', name:'噪音机器人'},
+            {id:'OSTY', name:'奥斯提'}, {id:'OVICOPTER', name:'直飞产卵虫'}, {id:'OWL_MAGISTRATE', name:'猫头鹰法官'},
+            {id:'PAELS_LEGION', name:'佩尔的士兵'}, {id:'QUEEN', name:'女王'}, {id:'SKULKING_COLONY', name:'鬼祟珊瑚群'},
+            // 第3层 精英 (70-79)
+            {id:'GIANT', name:'巨人'}, {id:'MAW', name:'大嘴'}, {id:'SNAKE', name:'巨蛇'},
+            {id:'TIME_EATER', name:'时间吞噬者'}, {id:'AWAKENED_ONE', name:'觉醒者'},
+            // ST2 新增精英
+            {id:'CALCIFIED_CULTIST', name:'钙化邪教徒'}, {id:'CEREMONIAL_BEAST', name:'仪式兽'}, {id:'DAMP_CULTIST', name:'潮湿邪教徒'},
+            {id:'KNOWLEDGE_DEMON', name:'知识恶魔'}, {id:'ROCKET', name:'火箭'},
+            // Boss (80-89)
+            {id:'HEXAGHOST', name:'六火亡魂'}, {id:'SLIME_BOSS', name:'史莱姆Boss'}, {id:'THE_GUARDIAN', name:'守护者'},
+            {id:'DONU_DECA', name:'唐纳和德卡'}, {id:'CORRUPT_HEART', name:'腐化之心'},
+            // ST2 新增Boss
+            {id:'DOORMAKER', name:'门扉缔造者'}, {id:'BATTLE_FRIEND_V3', name:'战斗好伙伴V3'}, {id:'BYRDONIS', name:'多尼斯异鸟'},
+            {id:'SLIMED_BERSERKER', name:'史莱姆狂战士'}, {id:'SCROLL_OF_BITING', name:'咬人卷轴'},
+            // 特殊敌人 (90-100)
+            {id:'BRUTE_RUBY_RAIDER', name:'劫掠者暴徒'}, {id:'DOOR', name:'门扉'}, {id:'ENTOMANCER', name:'蜂群术士'},
+            {id:'PHANTASMAL_GARDENER', name:'花园幽灵鳗'}, {id:'PHROG_PARASITE', name:'异蛙寄生虫'},
+            {id:'PUNCH_CONSTRUCT', name:'拳击构装体'}, {id:'LEAF_SLIME_M', name:'树叶史莱姆'},
+            // 事件/特殊 (101-105)
+            {id:'SHOP', name:'商店'}, {id:'TREASURE', name:'宝箱'}, {id:'REST', name:'休息处'},
+            {id:'EVENT', name:'事件'}, {id:'UNKNOWN', name:'未知'}
+        ];
+        
+        // 创建ID到索引的反向映射
+        const ENEMY_ID_TO_INDEX = {};
+        const ENEMY_INDEX_TO_NAME = {};
+        ENEMY_MAP.forEach((e, i) => {
+            ENEMY_ID_TO_INDEX[e.id] = i;
+            ENEMY_INDEX_TO_NAME[i] = e.name;
+        });
+        
+        // Base64 URL-safe 字符集
+        const BASE64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+        
+        // 简单的字节数组转 Base64 (无 padding)
+        function bytesToBase64(bytes) {
+            let result = '';
+            for (let i = 0; i < bytes.length; i += 3) {
+                const b1 = bytes[i];
+                const b2 = bytes[i + 1] || 0;
+                const b3 = bytes[i + 2] || 0;
+                result += BASE64_CHARS[b1 >> 2];
+                result += BASE64_CHARS[((b1 & 3) << 4) | (b2 >> 4)];
+                if (i + 1 < bytes.length) result += BASE64_CHARS[((b2 & 15) << 2) | (b3 >> 6)];
+                if (i + 2 < bytes.length) result += BASE64_CHARS[b3 & 63];
+            }
+            return result;
+        }
+        
+        // Base64 转字节数组
+        function base64ToBytes(str) {
+            const bytes = [];
+            for (let i = 0; i < str.length; i += 4) {
+                const c1 = BASE64_CHARS.indexOf(str[i]);
+                const c2 = BASE64_CHARS.indexOf(str[i + 1]);
+                const c3 = str[i + 2] ? BASE64_CHARS.indexOf(str[i + 2]) : -1;
+                const c4 = str[i + 3] ? BASE64_CHARS.indexOf(str[i + 3]) : -1;
+                
+                if (c1 < 0 || c2 < 0) continue;
+                bytes.push((c1 << 2) | (c2 >> 4));
+                if (c3 >= 0) bytes.push(((c2 & 15) << 4) | (c3 >> 2));
+                if (c4 >= 0) bytes.push(((c3 & 3) << 6) | c4);
+            }
+            return new Uint8Array(bytes);
+        }
+        
+        // 字节对齐编码 - 更可靠
+        function encodeRunToSeed(run) {
+            if (!GAME_DATA_CACHE) return null;
+            
+            const bytes = [];
+            
+            // 1. 头信息 (6字节)
+            // 版本(1) + 胜负(1) + 进阶(1) + 层数(1) + 日期偏移(2)
+            const baseDate = new Date('2024-01-01');
+            const runDate = new Date(run.date);
+            const dayOffset = Math.floor((runDate - baseDate) / (86400000));
+            
+            bytes.push(1); // 版本
+            bytes.push(run.victory ? 1 : 0); // 胜负
+            bytes.push(Math.min(run.ascension, 255)); // 进阶
+            bytes.push(Math.min(run.floor_reached, 255)); // 层数
+            bytes.push((dayOffset >> 8) & 0xFF); // 日期高字节
+            bytes.push(dayOffset & 0xFF); // 日期低字节
+            
+            // 2. 游戏种子 (4字节) - 原始游戏内的种子
+            const seedStr = (run.seed || '    ').substring(0, 4);
+            for (let i = 0; i < 4; i++) {
+                bytes.push(seedStr.charCodeAt(i) || 32);
+            }
+            
+            // 获取卡池索引映射
+            const cardList = Object.keys(GAME_DATA_CACHE.cards);
+            const relicList = Object.keys(GAME_DATA_CACHE.relics);
+            
+            // 3. 卡牌 (每张2字节: 索引高+低，最多20张 = 41字节含数量)
+            const cards = (run.cards_collected || []).slice(0, 20);
+            bytes.push(cards.length); // 卡牌数量
+            cards.forEach(c => {
+                const cleanId = c.id?.replace(/^CARD\./, '');
+                const idx = cardList.indexOf(cleanId);
+                const finalIdx = Math.max(0, idx);
+                bytes.push((finalIdx >> 8) & 0xFF); // 索引高字节
+                bytes.push(finalIdx & 0xFF); // 索引低字节
+                bytes.push(c.upgraded ? 1 : 0); // 升级标记
+            });
+            
+            // 4. 遗物 (每个2字节，最多15个 = 31字节含数量)
+            const relics = (run.relics_collected || []).slice(0, 15);
+            bytes.push(relics.length); // 遗物数量
+            relics.forEach(r => {
+                const cleanId = r.id?.replace(/^RELIC\./, '');
+                const idx = relicList.indexOf(cleanId);
+                const finalIdx = Math.max(0, idx);
+                bytes.push((finalIdx >> 8) & 0xFF);
+                bytes.push(finalIdx & 0xFF);
+            });
+            
+            // 5. 楼层摘要 - 扩展格式 (每层 6 字节：楼层号+类型+内容ID+HP+Gold+伤害)
+            // 添加战斗详情：当前HP(1字节) + 金币(1字节，除以10) + 受到伤害(1字节)
+            const floorSummaries = (run.floor_summary || []).slice(0, 20);
+            console.log('[Encode] Floor summaries count:', floorSummaries.length);
+            bytes.push(floorSummaries.length); // 楼层数量
+            
+            floorSummaries.forEach((floor, floorIdx) => {
+                // 楼层号 (1字节)
+                bytes.push(Math.min(floor.floor || 0, 255));
+                
+                // 类型 (1字节)
+                const typeMap = {monster:0, elite:1, boss:2, shop:3, treasure:4, rest:5, event:6, ancient:7};
+                const typeIdx = typeMap[floor.type] || 0;
+                bytes.push(typeIdx);
+                
+                // 内容ID (1字节) - 根据类型从不同映射表查找
+                const firstRoom = (floor.rooms || [])[0];
+                let contentId = 0; // 默认
+                
+                if (firstRoom) {
+                    const roomName = firstRoom.name_zh || firstRoom.name || '未知';
+                    // 根据类型查找对应的ID
+                    if (['monster', 'elite', 'boss'].includes(floor.type)) {
+                        contentId = getMonsterIdByName(roomName);
+                    } else if (['event', 'ancient'].includes(floor.type)) {
+                        contentId = getEventIdByName(roomName);
+                    } else {
+                        // shop/treasure/rest 使用固定值
+                        contentId = 0;
+                    }
+                } else {
+                    // 没有房间时使用类型默认值
+                    const typeDefault = {shop:0, treasure:1, rest:2, event:0, ancient:0};
+                    contentId = typeDefault[floor.type] || 0;
+                }
+                
+                bytes.push(contentId & 0xFF);
+                
+                // 战斗详情 (3字节)
+                // 获取房间数据（优先用第一个房间的数据）
+                const roomData = firstRoom || {};
+                // 当前HP (0-255，最大255点生命值)
+                const currentHp = Math.min(roomData.hp || floor.hp || 0, 255);
+                bytes.push(currentHp);
+                // 金币 (0-255，表示 0-2550G，每单位=10G)
+                const gold = Math.min(Math.floor((roomData.gold || floor.gold || 0) / 10), 255);
+                bytes.push(gold);
+                // 受到伤害 (0-255)
+                const damageTaken = Math.min(roomData.damage_taken || floor.damage_taken || 0, 255);
+                bytes.push(damageTaken);
+                
+                if (floorIdx < 3) {
+                    const roomName = firstRoom?.name_zh || firstRoom?.name || '(无)';
+                    console.log(`[Encode] Floor ${floorIdx}: F${floor.floor} ${floor.type} "${roomName}" ID[${contentId}] HP[${currentHp}] Gold[${gold*10}] Dmg[${damageTaken}]`);
+                }
+            });
+            
+            // 6. 死亡信息 (3字节: 是否死亡 + 死亡楼层 + 怪物ID)
+            const hasDeath = !!run.killed_by_name;
+            const deathMonsterId = hasDeath ? getMonsterIdByName(run.killed_by_name) : 0;
+            bytes.push(hasDeath ? 1 : 0);
+            bytes.push(Math.min(run.killed_by_floor || 0, 255));
+            bytes.push(deathMonsterId & 0xFF); // 怪物ID (1字节)
+            
+            return SEED_PREFIX + bytesToBase64(new Uint8Array(bytes));
+        }
+        
+        function decodeSeedToRun(seed) {
+            seed = seed.trim().replace(/\s/g, '');
+            
+            if (!seed || !seed.startsWith(SEED_PREFIX)) {
+                console.log('Invalid seed: missing prefix');
+                return null;
+            }
+            
+            try {
+                const base64 = seed.substring(SEED_PREFIX.length);
+                const bytes = base64ToBytes(base64);
+                let pos = 0; // 字节位置
+                
+                // 1. 读取头信息 (6字节)
+                const version = bytes[pos++];
+                if (version !== 1) throw new Error('Unknown version: ' + version);
+                
+                const victory = bytes[pos++] === 1;
+                const ascension = bytes[pos++];
+                const floor = bytes[pos++];
+                const dayOffset = (bytes[pos++] << 8) | bytes[pos++];
+                
+                const baseDate = new Date('2024-01-01');
+                const date = new Date(baseDate.getTime() + dayOffset * 86400000);
+                
+                // 2. 读取游戏种子 (4字节) - 原始游戏内的种子
+                let seedStr = '';
+                for (let i = 0; i < 4; i++) {
+                    const c = bytes[pos++];
+                    if (c !== 32) seedStr += String.fromCharCode(c);
+                }
+                
+                // 获取卡池
+                const cardList = Object.keys(GAME_DATA_CACHE?.cards || {});
+                const relicList = Object.keys(GAME_DATA_CACHE?.relics || {});
+                
+                // 3. 读取卡牌
+                const cardCount = bytes[pos++];
+                const cards = [];
+                for (let i = 0; i < cardCount; i++) {
+                    const idx = (bytes[pos++] << 8) | bytes[pos++];
+                    const upgraded = bytes[pos++] === 1;
+                    if (idx < cardList.length) {
+                        cards.push({
+                            id: 'CARD.' + cardList[idx],
+                            name: GAME_DATA_CACHE.cards[cardList[idx]]?.name,
+                            image: getCardImage(cardList[idx]),
+                            upgraded
+                        });
+                    }
+                }
+                
+                // 5. 读取遗物
+                const relicCount = bytes[pos++];
+                const relics = [];
+                for (let i = 0; i < relicCount; i++) {
+                    const idx = (bytes[pos++] << 8) | bytes[pos++];
+                    if (idx < relicList.length) {
+                        relics.push({
+                            id: 'RELIC.' + relicList[idx],
+                            name: GAME_DATA_CACHE.relics[relicList[idx]]?.name,
+                            image: getRelicImage(relicList[idx])
+                        });
+                    }
+                }
+                
+                // 6. 读取楼层摘要（每层 6 字节，扩展格式含战斗详情）
+                const floorCount = bytes[pos++];
+                console.log('[Decode] Floor count:', floorCount, 'pos:', pos, 'total bytes:', bytes.length);
+                const floorSummary = [];
+                const encounters = [];
+                
+                const typeNames = ['monster', 'elite', 'boss', 'shop', 'treasure', 'rest', 'event', 'ancient'];
+                
+                for (let i = 0; i < floorCount; i++) {
+                    if (pos + 6 > bytes.length) {
+                        console.error('[Decode] Not enough bytes for floor', i);
+                        break;
+                    }
+                    const floorNum = bytes[pos++];
+                    const typeIdx = bytes[pos++];
+                    const contentId = bytes[pos++]; // 1字节内容ID
+                    
+                    // 读取战斗详情 (3字节)
+                    const currentHp = bytes[pos++];
+                    const gold = bytes[pos++] * 10; // 乘以10还原
+                    const damageTaken = bytes[pos++];
+                    
+                    const typeName = typeNames[typeIdx] || 'unknown';
+                    
+                    // 根据类型从不同的映射表获取名称
+                    let roomName = '未知';
+                    let roomId = 'UNKNOWN';
+                    if (['monster', 'elite', 'boss'].includes(typeName)) {
+                        const data = getMonsterById(contentId);
+                        roomName = data?.name || '未知敌人';
+                        roomId = data?.id || 'UNKNOWN';
+                    } else if (['event', 'ancient'].includes(typeName)) {
+                        const data = getEventById(contentId);
+                        roomName = data?.name || '未知事件';
+                        roomId = data?.id || 'UNKNOWN';
+                    } else if (typeName === 'shop') {
+                        roomName = '商店';
+                        roomId = 'SHOP';
+                    } else if (typeName === 'treasure') {
+                        roomName = '宝箱';
+                        roomId = 'TREASURE';
+                    } else if (typeName === 'rest') {
+                        roomName = '休息处';
+                        roomId = 'REST';
+                    }
+                    
+                    const rooms = [{
+                        name_zh: roomName,
+                        name: roomName,
+                        id: roomId,
+                        image: roomId && roomId !== 'UNKNOWN' ? `${IMAGE_BASE_URL}/monsters/${roomId.toLowerCase()}.png` : null,
+                        // 添加战斗详情
+                        hp: currentHp,
+                        max_hp: currentHp + damageTaken, // 估算最大生命值
+                        gold: gold,
+                        damage_taken: damageTaken
+                    }];
+                    
+                    if (i < 3) {
+                        console.log(`[Decode] Floor ${i}: F${floorNum} ${typeName} "${roomName}" HP[${currentHp}] Gold[${gold}] Dmg[${damageTaken}]`);
+                    }
+                    
+                    floorSummary.push({
+                        floor: floorNum,
+                        type: typeName,
+                        rooms: rooms,
+                        // 在楼层级别也添加详情，方便显示
+                        hp: currentHp,
+                        max_hp: currentHp + damageTaken,
+                        gold: gold,
+                        damage_taken: damageTaken
+                    });
+                    
+                    encounters.push({
+                        floor: floorNum,
+                        type: typeName,
+                        name: roomName,
+                        hp: currentHp,
+                        max_hp: currentHp + damageTaken,
+                        gold: gold,
+                        damage_taken: damageTaken
+                    });
+                }
+                
+                // 7. 读取死亡信息 (2字节: 是否死亡 + 死亡楼层 + 怪物ID)
+                const hasDeath = bytes[pos++] === 1;
+                const killedFloor = bytes[pos++];
+                const deathMonsterId = bytes[pos++];
+                const deathMonster = hasDeath ? getMonsterById(deathMonsterId) : null;
+                
+                return {
+                    v: 1,
+                    d: date.toLocaleDateString('zh-CN'),
+                    f: floor,
+                    a: ascension,
+                    vi: victory ? 1 : 0,
+                    s: seedStr,
+                    c: cards.map(c => c.id.replace('CARD.', '')),
+                    r: relics.map(r => r.id.replace('RELIC.', '')),
+                    cards_collected: cards,
+                    relics_collected: relics,
+                    encounters,
+                    floor_summary: floorSummary.sort((a, b) => a.floor - b.floor),
+                    kb: deathMonster?.name || null,
+                    kf: hasDeath ? killedFloor : null
+                };
+                
+                // 展开压缩的ID
+                if (data.c) data.c = data.c.map(id => expandId(id, CARD_PREFIXES));
+                if (data.r) data.r = data.r.map(id => expandId(id, RELIC_PREFIXES));
+                
+                return data;
+            } catch (e) {
+                console.error('Failed to decode seed:', e);
+                return null;
+            }
+        }
+        
+        // 分享功能
+        async function generateShareCard(run) {
+            // 安全获取数组属性
+            const cardsCollected = run.cards_collected || [];
+            const relicsCollected = run.relics_collected || [];
+            const encounters = run.encounters || [];
+            const floorSummary = run.floor_summary || [];
+            
+            // 创建临时卡片容器
+            const card = document.createElement('div');
+            card.className = 'fixed top-0 left-0 w-[600px] bg-gradient-to-br from-[#0a0a0f] to-[#1a1a2e] p-8 rounded-2xl border-2 border-spire-gold/30';
+            card.style.zIndex = '-9999';
+            
+            // 预加载所有图片并添加 CORS 属性
+            const preloadImages = async () => {
+                const allImages = [];
+                // 收集所有图片 URL
+                cardsCollected.forEach(c => { if (c.image) allImages.push(c.image); });
+                relicsCollected.forEach(r => { if (r.image) allImages.push(r.image); });
+                
+                // 预加载并确保 CORS
+                const loadPromises = allImages.map(url => {
+                    return new Promise((resolve) => {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = () => resolve(true);
+                        img.onerror = () => resolve(false);
+                        // 添加随机参数避免缓存
+                        img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+                    });
+                });
+                
+                await Promise.all(loadPromises);
+                await new Promise(r => setTimeout(r, 200)); // 额外等待
+            };
+            
+            const isVictory = run.victory;
+            const statusColor = isVictory ? '#14b8a6' : '#dc2626';
+            const statusText = isVictory ? '胜利' : '失败';
+            
+            // 提取关底 Boss 信息
+            const bosses = [];
+            if (floorSummary.length > 0) {
+                // 按楼层排序并找出每层的 Boss
+                const sortedFloors = [...floorSummary].sort((a, b) => a.floor - b.floor);
+                for (const f of sortedFloors) {
+                    if (f.type === 'boss' && f.rooms && f.rooms[0]) {
+                        bosses.push({
+                            floor: f.floor,
+                            name: f.rooms[0].name_zh || f.rooms[0].name || '未知Boss',
+                            id: f.rooms[0].id
+                        });
+                    }
+                }
+            }
+            // 如果没有在 floor_summary 中找到，尝试 encounters
+            if (bosses.length === 0 && encounters.length > 0) {
+                for (const e of encounters) {
+                    if (e.type === 'boss') {
+                        bosses.push({
+                            floor: e.floor,
+                            name: e.name || '未知Boss',
+                            id: e.id
+                        });
+                    }
+                }
+            }
+            
+            // 生成 Boss 展示 HTML
+            const bossesHtml = bosses.length > 0 ? `
+                <div style="margin-bottom: 20px;">
+                    <p style="color: #94a3b8; font-size: 12px; margin-bottom: 10px; text-align: center;">关底 Boss</p>
+                    <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+                        ${bosses.map(b => `
+                            <div style="text-align: center;">
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); border: 2px solid #f59e0b; display: flex; align-items: center; justify-content: center; margin: 0 auto 4px; font-size: 20px;">💀</div>
+                                <div style="font-size: 11px; color: #f59e0b; font-weight: 600;">${b.name}</div>
+                                <div style="font-size: 10px; color: #64748b;">F${b.floor}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : '';
+            
+            // 添加缓存清除参数
+            const cacheBuster = '?_=' + Date.now();
+            
+            // 预加载图片
+            await preloadImages();
+            
+            // 卡牌预览 - 显示全部（最多20张），缩小尺寸以适应
+            const totalCards = cardsCollected.length;
+            const displayCards = cardsCollected.slice(0, 20);
+            const cardsHtml = displayCards.map(c => `
+                <div class="w-8 h-12 rounded bg-slate-800 border ${c.upgraded ? 'border-amber-500' : 'border-slate-600'} flex items-center justify-center overflow-hidden">
+                    ${c.image ? `
+                        <div class="img-placeholder w-full h-full hidden items-center justify-center text-[8px] text-slate-500">?</div>
+                        <img src="${c.image}${cacheBuster}" crossorigin="anonymous" class="w-full h-full object-contain p-0.5" 
+                             onerror="this.style.display='none'; this.parentElement.querySelector('.img-placeholder').style.display='flex';" 
+                             loading="eager" />
+                    ` : '<span class="text-[8px] text-slate-500">?</span>'}
+                </div>
+            `).join('');
+            
+            // 遗物预览 - 显示全部
+            const totalRelics = relicsCollected.length;
+            const relicsHtml = relicsCollected.map(r => `
+                <div class="w-8 h-8 rounded bg-slate-800 border border-slate-600 flex items-center justify-center overflow-hidden">
+                    ${r.image ? `
+                        <div class="img-placeholder w-full h-full hidden items-center justify-center text-[8px] text-slate-500">?</div>
+                        <img src="${r.image}${cacheBuster}" crossorigin="anonymous" class="w-full h-full object-contain p-0.5" 
+                             onerror="this.style.display='none'; this.parentElement.querySelector('.img-placeholder').style.display='flex';" 
+                             loading="eager" />
+                    ` : '<span class="text-[8px] text-slate-500">?</span>'}
+                </div>
+            `).join('');
+            
+            // 安全获取值
+            const runDate = run.date || '';
+            const runFloorReached = run.floor_reached || 0;
+            const runAscension = run.ascension || 0;
+            const runSeed = run.seed || '';
+            
+            card.innerHTML = `
+                <div class="text-center mb-6">
+                    <h2 style="font-size: 30px; font-weight: 700; background: linear-gradient(to right, #f59e0b, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">杀戮尖塔2</h2>
+                    <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">冒险日志 · ${runDate}</p>
+                </div>
+                
+                <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+                    <div style="display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px; border-radius: 12px; background: ${statusColor}20; border: 2px solid ${statusColor}60;">
+                        <span style="font-size: 24px;">${isVictory ? '🏆' : '💀'}</span>
+                        <span style="font-size: 20px; font-weight: 700; color: ${statusColor};">${statusText}</span>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+                    <div style="text-align: center; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05);">
+                        <div style="font-size: 24px; font-weight: 700; color: white;">${runFloorReached}</div>
+                        <div style="font-size: 12px; color: #94a3b8;">到达层数</div>
+                    </div>
+                    <div style="text-align: center; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05);">
+                        <div style="font-size: 24px; font-weight: 700; color: #f59e0b;">${runAscension}</div>
+                        <div style="font-size: 12px; color: #94a3b8;">进阶等级</div>
+                    </div>
+                    <div style="text-align: center; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05);">
+                        <div style="font-size: 24px; font-weight: 700; color: #a78bfa;">${relicsCollected.length}</div>
+                        <div style="font-size: 12px; color: #94a3b8;">遗物数</div>
+                    </div>
+                </div>
+                
+                ${bossesHtml}
+                
+                ${runSeed ? `
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="display: inline-block; padding: 8px 16px; border-radius: 8px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);">
+                        <span style="color: #94a3b8; font-size: 14px;">游戏种子: </span>
+                        <span style="color: #f59e0b; font-family: monospace; font-weight: 700;">${runSeed}</span>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${relicsHtml ? `
+                <div style="margin-bottom: 16px;">
+                    <p style="color: #94a3b8; font-size: 12px; margin-bottom: 8px; text-align: center;">遗物 (${totalRelics}个)</p>
+                    <div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; max-width: 400px; margin: 0 auto;">${relicsHtml}</div>
+                </div>
+                ` : ''}
+                
+                ${cardsHtml ? `
+                <div style="margin-bottom: 16px;">
+                    <p style="color: #94a3b8; font-size: 12px; margin-bottom: 8px; text-align: center;">卡牌 (${totalCards}张${totalCards > 20 ? `，显示前20张` : ''})</p>
+                    <div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; max-width: 400px; margin: 0 auto;">${cardsHtml}</div>
+                </div>
+                ` : ''}
+                
+                <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <p style="font-size: 12px; color: #64748b;">sts2.echopie.com</p>
+                </div>
+            `;
+            
+            document.body.appendChild(card);
+            
+            // 等待所有图片加载完成
+            const images = card.querySelectorAll('img');
+            await Promise.all(Array.from(images).map(img => {
+                return new Promise((resolve) => {
+                    if (img.complete) {
+                        resolve();
+                    } else {
+                        img.onload = resolve;
+                        img.onerror = resolve;
+                        // 超时处理
+                        setTimeout(resolve, 2000);
+                    }
+                });
+            }));
+            
+            // 再多等一下确保渲染完成
+            await new Promise(r => setTimeout(r, 300));
+            
+            // 生成图片
+            try {
+                const canvas = await html2canvas(card, {
+                    backgroundColor: '#0f172a',
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: false,
+                    logging: false,
+                    imageTimeout: 5000,
+                    foreignObjectRendering: false, // 禁用 foreignObject 渲染，更兼容
+                    removeContainer: true,
+                    onclone: (clonedDoc) => {
+                        // 在克隆的文档中处理跨域图片
+                        const images = clonedDoc.querySelectorAll('img');
+                        images.forEach(img => {
+                            // 强制设置 crossOrigin
+                            img.crossOrigin = 'anonymous';
+                            // 如果图片跨域失败，使用占位符
+                            img.onerror = () => {
+                                img.style.display = 'none';
+                                const placeholder = img.parentElement.querySelector('.img-placeholder');
+                                if (placeholder) placeholder.style.display = 'flex';
+                            };
+                        });
+                    }
+                });
+                
+                document.body.removeChild(card);
+                return canvas.toDataURL('image/png');
+            } catch (e) {
+                console.warn('[ShareCard] html2canvas failed:', e);
+                // 即使失败也尝试返回 canvas
+                document.body.removeChild(card);
+                // 使用更低配置重试 - 完全不加载图片
+                try {
+                    const retryCard = card.cloneNode(true);
+                    retryCard.style.opacity = '0.95';
+                    // 移除所有图片，只保留占位符
+                    retryCard.querySelectorAll('img').forEach(img => img.remove());
+                    retryCard.querySelectorAll('.img-placeholder').forEach(ph => {
+                        ph.style.display = 'flex';
+                        ph.classList.remove('hidden');
+                    });
+                    document.body.appendChild(retryCard);
+                    const canvas = await html2canvas(retryCard, {
+                        backgroundColor: '#0f172a',
+                        scale: 1,
+                        useCORS: false,
+                        allowTaint: false,
+                        logging: false,
+                        imageTimeout: 0 // 不加载图片
+                    });
+                    document.body.removeChild(retryCard);
+                    return canvas.toDataURL('image/png');
+                } catch (e2) {
+                    throw e;
+                }
+            }
+        }
+        
+        async function shareRun(run) {
+            const seed = encodeRunToSeed(run);
+            
+            // 显示分享对话框
+            const shareHtml = `
+                <div class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" id="shareModal">
+                    <div class="glass-card rounded-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+                        <h3 class="text-xl font-bold text-white mb-4">分享对局</h3>
+                        
+                        <!-- 选项1: 分享码 -->
+                        <div class="mb-6">
+                            <h4 class="text-sm font-semibold text-slate-300 mb-2">方式一: 分享码</h4>
+                            <p class="text-xs text-slate-400 mb-2">复制下方分享码，其他人可以在工具中加载此存档</p>
+                            <div class="flex gap-2">
+                                <code class="flex-1 p-3 rounded-lg bg-black/30 text-spire-gold font-mono text-sm break-all">${seed}</code>
+                                <button onclick="navigator.clipboard.writeText('${seed}'); this.textContent='已复制'; setTimeout(() => this.textContent='复制', 2000);" 
+                                    class="px-4 py-2 rounded-lg bg-spire-gold/20 text-spire-gold hover:bg-spire-gold/30 transition-colors text-sm">
+                                    复制
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 选项2: 生成卡片 -->
+                        <div class="mb-4">
+                            <h4 class="text-sm font-semibold text-slate-300 mb-2">方式二: 分享卡片</h4>
+                            <p class="text-xs text-slate-400 mb-2">生成精美图片卡片，可保存分享</p>
+                            <button id="generateCardBtn" class="w-full py-3 rounded-lg bg-gradient-to-r from-spire-gold to-spire-gold-light text-black font-semibold hover:opacity-90 transition-opacity">
+                                生成分享卡片
+                            </button>
+                        </div>
+                        
+                        <!-- 预览区域 -->
+                        <div id="cardPreview" class="hidden mb-4">
+                            <img id="cardImage" class="w-full rounded-lg border border-white/10" />
+                            <a id="downloadCard" download="sts2-run-${run.seed || run.date}.png" class="block w-full mt-2 py-2 text-center rounded-lg bg-white/10 text-white hover:bg-white/15 transition-colors text-sm">
+                                下载图片
+                            </a>
+                        </div>
+                        
+                        <button onclick="document.getElementById('shareModal').remove();" class="w-full py-3 rounded-lg bg-white/10 text-slate-300 hover:bg-white/15 transition-colors">
+                            关闭
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            const div = document.createElement('div');
+            div.innerHTML = shareHtml;
+            document.body.appendChild(div.firstElementChild);
+            
+            // 绑定生成卡片按钮
+            document.getElementById('generateCardBtn').addEventListener('click', async () => {
+                const btn = document.getElementById('generateCardBtn');
+                btn.textContent = '生成中...';
+                btn.disabled = true;
+                
+                try {
+                    const dataUrl = await generateShareCard(run);
+                    document.getElementById('cardImage').src = dataUrl;
+                    document.getElementById('downloadCard').href = dataUrl;
+                    document.getElementById('cardPreview').classList.remove('hidden');
+                    btn.textContent = '重新生成';
+                } catch (e) {
+                    alert('生成失败: ' + e.message);
+                    btn.textContent = '生成分享卡片';
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+        }
+        
+        function loadFromSeed(seed) {
+            const data = decodeSeedToRun(seed.trim());
+            if (!data) {
+                alert('无效的分享码');
+                return null;
+            }
+            
+            // 新的二进制格式已经返回 encounters 和 floor_summary
+            // 直接使用 decodeSeedToRun 返回的数据
+            
+            // 从分享码数据重建存档对象
+            return {
+                filename: 'shared.run',
+                timestamp: Date.now() / 1000,
+                date: data.d || new Date().toLocaleDateString('zh-CN'),
+                time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+                version: 'Shared',
+                mode: 'standard',
+                ascension: data.a || 0,
+                seed: data.s || '',
+                victory: data.vi === 1,
+                floor_reached: data.f || 0,
+                killed_by_name: data.kb,
+                killed_by_floor: data.kf,
+                total_damage_taken: 0,
+                total_gold_gained: 0,
+                total_gold_spent: 0,
+                cards_collected: data.cards_collected || [],
+                relics_collected: data.relics_collected || [],
+                encounters: data.encounters || [],
+                floor_summary: data.floor_summary || [],
+            };
+        }
+
+        // State
+        let localRuns = [];      // 本地上传的存档
+        let sharedRuns = [];     // 分享码加载的存档
+        let allRuns = [];        // 合并显示（向后兼容）
+        let currentFilter = 'all';
+        let currentView = 'local'; // 'local', 'shared', 'all'
+        let currentProfile = null; // 当前选中的 profile
+        let availableProfiles = []; // 可用的 profiles
+        
+        // Storage keys
+        const STORAGE_KEY_PREFIX = 'sts2_journal_';
+        const STORAGE_KEY_LOCAL = STORAGE_KEY_PREFIX + 'local_runs';
+        const STORAGE_KEY_SHARED = STORAGE_KEY_PREFIX + 'shared_runs';
+        const STORAGE_KEY_PROFILES = STORAGE_KEY_PREFIX + 'profiles';
+        const STORAGE_KEY_CURRENT_PROFILE = STORAGE_KEY_PREFIX + 'current_profile';
+        
+        // Load cached data on init
+        function loadCachedRuns() {
+            try {
+                // Load profiles
+                const profilesData = localStorage.getItem(STORAGE_KEY_PROFILES);
+                if (profilesData) {
+                    availableProfiles = JSON.parse(profilesData);
+                    console.log('[Cache] Loaded profiles:', availableProfiles.length);
+                }
+                
+                // Load current profile
+                const currentProfileData = localStorage.getItem(STORAGE_KEY_CURRENT_PROFILE);
+                if (currentProfileData) {
+                    currentProfile = JSON.parse(currentProfileData);
+                    console.log('[Cache] Current profile:', currentProfile?.name);
+                }
+                
+                // Load runs for current profile
+                loadRunsForProfile(currentProfile?.id);
+            } catch (e) {
+                console.error('[Cache] Failed to load:', e);
+            }
+        }
+        
+        // Load runs for specific profile
+        function loadRunsForProfile(profileId) {
+            if (!profileId) {
+                // No profile selected, use default keys
+                const localData = localStorage.getItem(STORAGE_KEY_LOCAL);
+                const sharedData = localStorage.getItem(STORAGE_KEY_SHARED);
+                if (localData) localRuns = JSON.parse(localData);
+                if (sharedData) sharedRuns = JSON.parse(sharedData);
+            } else {
+                // Use profile-specific keys
+                const profileLocalKey = STORAGE_KEY_PREFIX + 'local_runs_' + profileId;
+                const profileSharedKey = STORAGE_KEY_PREFIX + 'shared_runs_' + profileId;
+                const localData = localStorage.getItem(profileLocalKey);
+                const sharedData = localStorage.getItem(profileSharedKey);
+                localRuns = localData ? JSON.parse(localData) : [];
+                sharedRuns = sharedData ? JSON.parse(sharedData) : [];
+            }
+            console.log('[Cache] Loaded runs for profile:', profileId, { local: localRuns.length, shared: sharedRuns.length });
+            updateAllRuns();
+            updateStats(); // 更新统计数据
+        }
+        
+        // Save runs for current profile
+        function saveRunsForCurrentProfile() {
+            if (currentProfile?.id) {
+                const profileLocalKey = STORAGE_KEY_PREFIX + 'local_runs_' + currentProfile.id;
+                const profileSharedKey = STORAGE_KEY_PREFIX + 'shared_runs_' + currentProfile.id;
+                localStorage.setItem(profileLocalKey, JSON.stringify(localRuns));
+                localStorage.setItem(profileSharedKey, JSON.stringify(sharedRuns));
+            } else {
+                // Fallback to default keys
+                saveLocalRuns();
+                saveSharedRuns();
+            }
+        }
+        
+        // Switch profile
+        function switchProfile(profileId) {
+            const profile = availableProfiles.find(p => p.id === profileId);
+            if (!profile) {
+                console.error('[Profile] Not found:', profileId);
+                return;
+            }
+            
+            // Save current runs before switching
+            if (currentProfile) {
+                saveRunsForCurrentProfile();
+            }
+            
+            // Switch to new profile
+            currentProfile = profile;
+            localStorage.setItem(STORAGE_KEY_CURRENT_PROFILE, JSON.stringify(currentProfile));
+            
+            // Load runs for new profile
+            loadRunsForProfile(profileId);
+            updateProfileUI();
+            renderRuns();
+            
+            console.log('[Profile] Switched to:', profile.name);
+        }
+        
+        // Add new profile
+        function addProfile(profile) {
+            if (!availableProfiles.find(p => p.id === profile.id)) {
+                availableProfiles.push(profile);
+                localStorage.setItem(STORAGE_KEY_PROFILES, JSON.stringify(availableProfiles));
+            }
+        }
+        
+        // Delete profile
+        function deleteProfile(profileId) {
+            availableProfiles = availableProfiles.filter(p => p.id !== profileId);
+            localStorage.setItem(STORAGE_KEY_PROFILES, JSON.stringify(availableProfiles));
+            
+            // Clear profile-specific data
+            localStorage.removeItem(STORAGE_KEY_PREFIX + 'local_runs_' + profileId);
+            localStorage.removeItem(STORAGE_KEY_PREFIX + 'shared_runs_' + profileId);
+            
+            if (currentProfile?.id === profileId) {
+                currentProfile = availableProfiles.length > 0 ? availableProfiles[0] : null;
+                localStorage.setItem(STORAGE_KEY_CURRENT_PROFILE, JSON.stringify(currentProfile));
+                loadRunsForProfile(currentProfile?.id);
+            }
+            
+            updateProfileUI();
+        }
+        
+        // Save to localStorage
+        function saveLocalRuns() {
+            try {
+                const key = currentProfile?.id 
+                    ? STORAGE_KEY_PREFIX + 'local_runs_' + currentProfile.id 
+                    : STORAGE_KEY_LOCAL;
+                localStorage.setItem(key, JSON.stringify(localRuns));
+            } catch (e) {
+                console.error('[Cache] Failed to save local:', e);
+            }
+        }
+        
+        function saveSharedRuns() {
+            try {
+                const key = currentProfile?.id 
+                    ? STORAGE_KEY_PREFIX + 'shared_runs_' + currentProfile.id 
+                    : STORAGE_KEY_SHARED;
+                localStorage.setItem(key, JSON.stringify(sharedRuns));
+            } catch (e) {
+                console.error('[Cache] Failed to save shared:', e);
+            }
+        }
+        
+        // Clear cache
+        function clearCache(type = 'all') {
+            const profileSuffix = currentProfile?.id ? '_' + currentProfile.id : '';
+            
+            if (type === 'local' || type === 'all') {
+                localRuns = [];
+                localStorage.removeItem(STORAGE_KEY_PREFIX + 'local_runs' + profileSuffix);
+            }
+            if (type === 'shared' || type === 'all') {
+                sharedRuns = [];
+                localStorage.removeItem(STORAGE_KEY_PREFIX + 'shared_runs' + profileSuffix);
+            }
+            updateAllRuns();
+            updateViewButtons();
+            renderRuns();
+            console.log('[Cache] Cleared:', type, 'for profile:', currentProfile?.id);
+        }
+        
+        // Clear current view cache
+        function clearCurrentViewCache() {
+            if (confirm(`确定要清除${currentView === 'local' ? '本地存档' : currentView === 'shared' ? '分享码' : '所有'}缓存吗？`)) {
+                clearCache(currentView);
+                if (localRuns.length === 0 && sharedRuns.length === 0) {
+                    // 如果没有数据了，回到上传界面
+                    uploadSection.classList.remove('hidden');
+                    emptyState.classList.remove('hidden');
+                    filters.classList.add('hidden');
+                    statsPanel.classList.add('hidden');
+                    cardsContainer.innerHTML = '';
+                }
+            }
+        }
+        
+        // Show re-upload dialog
+        function showReuploadDialog() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm';
+            modal.id = 'reuploadModal';
+            modal.innerHTML = `
+                <div class="glass-card rounded-2xl w-full max-w-md p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">重新上传存档</h3>
+                    
+                    <div class="space-y-3 mb-6">
+                        <button onclick="reuploadToCurrentProfile()" class="w-full p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-spire-gold/50 transition-all text-left">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-spire-gold/20 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-spire-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-white">上传到当前 Profile</div>
+                                    <div class="text-xs text-slate-500">${currentProfile?.name || '默认存档'}</div>
+                                </div>
+                            </div>
+                        </button>
+                        
+                        <button onclick="reuploadToNewProfile()" class="w-full p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-spire-teal/50 transition-all text-left">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-spire-teal/20 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-spire-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-white">创建新 Profile</div>
+                                    <div class="text-xs text-slate-500">上传到新存档槽位</div>
+                                </div>
+                            </div>
+                        </button>
+                        
+                        ${availableProfiles.length > 1 ? `
+                        <button onclick="reuploadToExistingProfile()" class="w-full p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-spire-blue/50 transition-all text-left">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-spire-blue/20 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-spire-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-white">选择其他 Profile</div>
+                                    <div class="text-xs text-slate-500">上传到已有的存档槽位</div>
+                                </div>
+                            </div>
+                        </button>
+                        ` : ''}
+                    </div>
+                    
+                    <button onclick="closeReuploadModal()" class="w-full py-3 rounded-lg bg-white/10 text-slate-300 hover:bg-white/15 transition-colors">
+                        取消
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 点击背景关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeReuploadModal();
+            });
+        }
+        
+        // Close reupload modal
+        function closeReuploadModal() {
+            const modal = document.getElementById('reuploadModal');
+            if (modal) modal.remove();
+        }
+        
+        // Re-upload to current profile
+        function reuploadToCurrentProfile() {
+            closeReuploadModal();
+            // 清空当前 profile 的本地存档
+            localRuns = [];
+            // 触发文件选择
+            document.getElementById('fileInput').click();
+        }
+        
+        // Re-upload to new profile
+        function reuploadToNewProfile() {
+            closeReuploadModal();
+            // 生成新 profile ID
+            const newProfileId = 'profile_' + Date.now();
+            const newProfile = { id: newProfileId, name: 'Profile ' + (availableProfiles.length + 1) };
+            
+            // 保存当前 profile 数据
+            if (currentProfile) {
+                saveRunsForCurrentProfile();
+            }
+            
+            // 切换到新 profile
+            currentProfile = newProfile;
+            addProfile(newProfile);
+            localStorage.setItem(STORAGE_KEY_CURRENT_PROFILE, JSON.stringify(currentProfile));
+            
+            // 清空本地存档
+            localRuns = [];
+            sharedRuns = [];
+            updateAllRuns();
+            updateProfileUI();
+            
+            // 触发文件选择
+            document.getElementById('fileInput').click();
+        }
+        
+        // Re-upload to existing profile
+        function reuploadToExistingProfile() {
+            closeReuploadModal();
+            
+            // 显示 profile 选择器
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm';
+            modal.id = 'profileSelectModal';
+            modal.innerHTML = `
+                <div class="glass-card rounded-2xl w-full max-w-md p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">选择 Profile</h3>
+                    <div class="space-y-2 mb-6 max-h-60 overflow-y-auto">
+                        ${availableProfiles.map(p => `
+                            <button onclick="selectProfileForReupload('${p.id}')" class="w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-spire-gold/50 transition-all text-left flex items-center gap-3 ${p.id === currentProfile?.id ? 'border-spire-gold/50' : ''}">
+                                <div class="w-8 h-8 rounded-lg bg-spire-gold/20 flex items-center justify-center text-sm">👤</div>
+                                <div class="flex-1">
+                                    <div class="font-medium text-white">${p.name}</div>
+                                    <div class="text-xs text-slate-500">${p.id === currentProfile?.id ? '当前 Profile' : '点击选择'}</div>
+                                </div>
+                            </button>
+                        `).join('')}
+                    </div>
+                    <button onclick="document.getElementById('profileSelectModal').remove()" class="w-full py-3 rounded-lg bg-white/10 text-slate-300 hover:bg-white/15 transition-colors">
+                        取消
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Select profile for re-upload
+        function selectProfileForReupload(profileId) {
+            const modal = document.getElementById('profileSelectModal');
+            if (modal) modal.remove();
+            
+            // 切换到选中的 profile
+            const profile = availableProfiles.find(p => p.id === profileId);
+            if (profile) {
+                // 保存当前数据
+                saveRunsForCurrentProfile();
+                
+                // 切换到目标 profile
+                currentProfile = profile;
+                localStorage.setItem(STORAGE_KEY_CURRENT_PROFILE, JSON.stringify(currentProfile));
+                
+                // 加载目标 profile 的数据，但清空本地存档等待重新上传
+                loadRunsForProfile(profileId);
+                localRuns = []; // 清空本地存档
+                saveLocalRuns();
+                updateAllRuns();
+                renderRuns();
+                
+                // 触发文件选择
+                document.getElementById('fileInput').click();
+            }
+        }
+        
+        // Switch view
+        function switchView(view) {
+            currentView = view;
+            updateAllRuns();
+            updateViewButtons();
+            renderRuns();
+            console.log('[View] Switched to:', view);
+        }
+        
+        // Update view buttons state
+        function updateViewButtons() {
+            const localBtn = document.getElementById('viewLocalBtn');
+            const sharedBtn = document.getElementById('viewSharedBtn');
+            const allBtn = document.getElementById('viewAllBtn');
+            
+            if (localBtn) {
+                localBtn.className = `view-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${currentView === 'local' ? 'bg-spire-gold/20 text-spire-gold' : 'text-slate-400 hover:text-white'}`;
+                localBtn.innerHTML = `本地存档 (${localRuns.length})`;
+            }
+            if (sharedBtn) {
+                sharedBtn.className = `view-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${currentView === 'shared' ? 'bg-spire-gold/20 text-spire-gold' : 'text-slate-400 hover:text-white'}`;
+                sharedBtn.innerHTML = `分享码 (${sharedRuns.length})`;
+            }
+            if (allBtn) {
+                allBtn.className = `view-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${currentView === 'all' ? 'bg-spire-gold/20 text-spire-gold' : 'text-slate-400 hover:text-white'}`;
+            }
+            
+            updateProfileUI();
+        }
+        
+        // Update profile UI
+        function updateProfileUI() {
+            const profileSelector = document.getElementById('profileSelector');
+            if (!profileSelector) return;
+            
+            if (availableProfiles.length <= 1) {
+                profileSelector.classList.add('hidden');
+                return;
+            }
+            
+            profileSelector.classList.remove('hidden');
+            profileSelector.innerHTML = `
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                    <svg class="w-4 h-4 text-spire-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <select id="profileSelect" class="bg-transparent text-sm text-white outline-none cursor-pointer" onchange="switchProfile(this.value)">
+                        ${availableProfiles.map(p => `
+                            <option value="${p.id}" ${currentProfile?.id === p.id ? 'selected' : ''}>
+                                ${p.name}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+            `;
+        }
+        
+        // Update allRuns based on current view
+        function updateAllRuns() {
+            switch (currentView) {
+                case 'local':
+                    allRuns = [...localRuns];
+                    break;
+                case 'shared':
+                    allRuns = [...sharedRuns];
+                    break;
+                case 'all':
+                default:
+                    allRuns = [...localRuns, ...sharedRuns];
+                    break;
+            }
+        }
+
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const autoDetectBtn = document.getElementById('autoDetectBtn');
+        const uploadSection = document.getElementById('uploadSection');
+        const statsPanel = document.getElementById('statsPanel');
+        const filters = document.getElementById('filters');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const cardsContainer = document.getElementById('cardsContainer');
+        const detailModal = document.getElementById('detailModal');
+        const loadSeedBtn = document.getElementById('loadSeedBtn');
+
+        // Event Listeners
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        // Prevent default drag behaviors on document
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            document.body.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            // Handle dropped files/folders
+            const items = e.dataTransfer.items;
+            if (items) {
+                // Use DataTransferItemList interface for folder support
+                const files = [];
+                const promises = [];
+                
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    if (item.kind === 'file') {
+                        const entry = item.webkitGetAsEntry();
+                        if (entry) {
+                            promises.push(traverseFileTree(entry, files));
+                        }
+                    }
+                }
+                
+                Promise.all(promises).then(() => {
+                    if (files.length > 0) {
+                        handleFiles(files);
+                    }
+                });
+            } else {
+                // Fallback to files interface
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+        
+        // Recursively traverse directory
+        function traverseFileTree(item, files) {
+            return new Promise((resolve) => {
+                if (item.isFile) {
+                    item.file((file) => {
+                        files.push(file);
+                        resolve();
+                    });
+                } else if (item.isDirectory) {
+                    const dirReader = item.createReader();
+                    dirReader.readEntries((entries) => {
+                        const promises = entries.map(entry => traverseFileTree(entry, files));
+                        Promise.all(promises).then(resolve);
+                    });
+                } else {
+                    resolve();
+                }
+            });
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        // Load seed button - 使用自定义模态框
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('#loadSeedBtn');
+            if (!btn) return;
+            
+            // 确保游戏数据已加载
+            if (!GAME_DATA_CACHE) {
+                await loadGameData();
+            }
+            
+            openSeedModal();
+        });
+
+        // OS Detection and UI Setup
+        function initOSControls() {
+            const platform = navigator.platform.toLowerCase();
+            const userAgent = navigator.userAgent.toLowerCase();
+            
+            // Detect OS
+            let os = 'other';
+            if (platform.includes('win') || userAgent.includes('windows')) {
+                os = 'windows';
+            } else if (platform.includes('mac') || userAgent.includes('macintosh')) {
+                os = 'mac';
+            } else if (platform.includes('linux') || userAgent.includes('linux')) {
+                os = 'linux';
+            }
+            
+            // Show appropriate controls
+            document.getElementById('windowsControls').classList.add('hidden');
+            document.getElementById('macControls').classList.add('hidden');
+            document.getElementById('linuxControls').classList.add('hidden');
+            document.getElementById('osControls').classList.remove('hidden');
+            
+            if (os === 'windows') {
+                document.getElementById('windowsControls').classList.remove('hidden');
+                setupWindowsControls();
+            } else if (os === 'mac') {
+                document.getElementById('macControls').classList.remove('hidden');
+                setupMacControls();
+            } else {
+                document.getElementById('linuxControls').classList.remove('hidden');
+            }
+        }
+        
+        // Windows controls
+        function setupWindowsControls() {
+            const autoDetectBtn = document.getElementById('autoDetectBtn');
+            const openFolderWin = document.getElementById('openFolderWin');
+            
+            // Auto detect button
+            autoDetectBtn.addEventListener('click', async () => {
+                if ('showDirectoryPicker' in window) {
+                    try {
+                        const dirHandle = await window.showDirectoryPicker();
+                        await processDirectory(dirHandle);
+                    } catch (err) {
+                        console.log('用户取消了选择');
+                    }
+                } else {
+                    alert('您的浏览器不支持自动检测功能，请使用拖拽或点击上传文件');
+                }
+            });
+            
+            // Open folder link
+            const winPath = '%AppData%\\..\\LocalLow\\Mega Crit\\SlayTheSpire2';
+            openFolderWin.href = `file:///${winPath.replace(/\\/g, '/')}`;
+            openFolderWin.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Try to open via explorer
+                const shell = new ActiveXObject('WScript.Shell');
+                if (shell) {
+                    shell.Run(`explorer.exe "${winPath}"`);
+                } else {
+                    // Fallback: copy path to clipboard
+                    navigator.clipboard.writeText(winPath).then(() => {
+                        alert('路径已复制到剪贴板，请在文件资源管理器中粘贴地址栏');
+                    });
+                }
+            });
+        }
+        
+        // macOS controls
+        function setupMacControls() {
+            const macPath = document.getElementById('macPath');
+            const openFolderMac = document.getElementById('openFolderMac');
+            
+            // Try to detect Steam ID from common locations
+            const basePath = '~/Library/Application Support/SlayTheSpire2/steam';
+            macPath.textContent = basePath;
+            
+            // Open folder link (will prompt for permission)
+            openFolderMac.href = `file://${basePath.replace(/~/g, '/Users/' + (navigator.userAgent.match(/Mac OS X [0-9_]+ \(([^)]+)\)/)?.[1] || 'username'))}`;
+            openFolderMac.addEventListener('click', (e) => {
+                // Copy path for user to use in 访达
+                copyMacPath();
+            });
+        }
+        
+        // Copy macOS path
+        function copyMacPath() {
+            const path = document.getElementById('macPath').textContent;
+            navigator.clipboard.writeText(path).then(() => {
+                const btn = document.querySelector('#macControls button');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = `
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    已复制
+                `;
+                btn.classList.add('text-spire-teal');
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('text-spire-teal');
+                }, 2000);
+            });
+        }
+        
+        // Process directory (if user manages to select one)
+        async function processDirectory(dirHandle) {
+            const files = [];
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'file' && entry.name.endsWith('.run')) {
+                    const file = await entry.getFile();
+                    files.push(file);
+                }
+            }
+            handleFiles(files);
+        }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderRuns();
+            });
+        });
+
+        // Close modal on overlay click
+        detailModal.addEventListener('click', (e) => {
+            if (e.target === detailModal) closeModal();
+        });
+
+        // Close modal on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+        
+        // Initialize OS-specific controls
+        initOSControls();
+        
+        // Load game data on startup
+        loadGameData();
+        
+        // Load cached runs
+        loadCachedRuns();
+        
+        // If has cached data, show it
+        if (localRuns.length > 0 || sharedRuns.length > 0) {
+            // 默认显示本地存档，如果没有则显示分享码
+            currentView = localRuns.length > 0 ? 'local' : 'shared';
+            updateAllRuns();
+            updateViewButtons();
+            uploadSection.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            filters.classList.remove('hidden');
+            statsPanel.classList.remove('hidden');
+            renderRuns();
+            updateStats(); // 更新统计数据
+        } else {
+            updateViewButtons();
+        }
+
+        // Process directory
+        async function processDirectory(dirHandle) {
+            const files = [];
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'file' && entry.name.endsWith('.run')) {
+                    const file = await entry.getFile();
+                    files.push(file);
+                }
+            }
+            handleFiles(files);
+        }
+
+        // Handle files
+        async function handleFiles(files) {
+            const runFiles = Array.from(files).filter(f => f.name.endsWith('.run'));
+            
+            if (runFiles.length === 0) {
+                showError('没有找到 .run 存档文件');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                // 收集所有存档和 profile 信息
+                const parsedRuns = [];
+                const profiles = new Map();
+                
+                for (const file of runFiles) {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+                    
+                    // 提取 profile ID（从路径或数据中提取）
+                    let profileId = null;
+                    let profileName = null;
+                    
+                    // 尝试从文件路径提取 profile
+                    if (file.path) {
+                        const pathMatch = file.path.match(/[/\\]Profile_?(\w+)[/\\]/i);
+                        if (pathMatch) {
+                            profileId = pathMatch[1];
+                            profileName = 'Profile ' + profileId;
+                        }
+                    }
+                    
+                    // 尝试从数据中提取
+                    if (!profileId && data.player_id) {
+                        profileId = String(data.player_id);
+                        profileName = '玩家 ' + profileId.slice(0, 8);
+                    }
+                    
+                    // 尝试从 save_path 提取
+                    if (!profileId && data.save_path) {
+                        const savePathMatch = data.save_path.match(/[/\\]Profile_?(\w+)[/\\]/i);
+                        if (savePathMatch) {
+                            profileId = savePathMatch[1];
+                            profileName = 'Profile ' + profileId;
+                        }
+                    }
+                    
+                    // 如果没有找到 profile，使用默认
+                    if (!profileId) {
+                        profileId = 'default';
+                        profileName = '默认存档';
+                    }
+                    
+                    if (!profiles.has(profileId)) {
+                        profiles.set(profileId, { id: profileId, name: profileName });
+                    }
+                    
+                    parsedRuns.push({ data, filename: file.name, profileId });
+                }
+                
+                // 如果只有一个 profile，直接使用
+                if (profiles.size === 1) {
+                    const profile = Array.from(profiles.values())[0];
+                    await loadRunsForProfileData(parsedRuns, profile);
+                } else {
+                    // 多个 profile，显示选择对话框
+                    await showProfileSelector(Array.from(profiles.values()), parsedRuns);
+                }
+            } catch (err) {
+                showError('解析存档失败: ' + err.message);
+            }
+        }
+        
+        // Generate unique run ID for deduplication
+        function generateRunId(data) {
+            // 使用多个字段组合生成唯一ID
+            const timestamp = data.timestamp || data.play_id || '';
+            const seed = data.seed || '';
+            const character = data.chosen_class || '';
+            const floor = data.floor_reached || 0;
+            const buildId = data.build_id || '';
+            
+            // 组合成唯一标识符
+            return `${timestamp}_${seed}_${character}_${floor}_${buildId}`;
+        }
+        
+        // Load runs for selected profile
+        async function loadRunsForProfileData(parsedRuns, profile) {
+            // 如果切换了 profile，先保存当前的
+            if (currentProfile && currentProfile.id !== profile.id) {
+                saveRunsForCurrentProfile();
+            }
+            
+            // 设置当前 profile
+            currentProfile = profile;
+            addProfile(profile);
+            localStorage.setItem(STORAGE_KEY_CURRENT_PROFILE, JSON.stringify(currentProfile));
+            
+            // 加载已存在的存档（如果有）
+            loadRunsForProfile(profile.id);
+            
+            // 解析选中的 profile 的存档，追加而不是替换
+            const profileRuns = parsedRuns.filter(r => r.profileId === profile.id);
+            let addedCount = 0;
+            let dupCount = 0;
+            
+            for (const { data, filename } of profileRuns) {
+                // 去重检查
+                const runId = generateRunId(data);
+                if (localRuns.some(run => generateRunId(run.rawData || run) === runId)) {
+                    dupCount++;
+                    console.log(`⏭️ 跳过重复: ${data.chosen_class || 'Unknown'} - Floor ${data.floor_reached || '?'}`);
+                    continue;
+                }
+                
+                const analysis = analyzeRun(data, filename);
+                analysis.source = 'local';
+                analysis.profileId = profile.id;
+                analysis.rawData = data; // 保存原始数据用于去重检查
+                localRuns.push(analysis);
+                addedCount++;
+            }
+            
+            saveLocalRuns();
+            currentView = 'local';
+            updateAllRuns();
+            
+            if (dupCount > 0) {
+                console.log(`⚠️ 跳过了 ${dupCount} 个重复存档`);
+            }
+            
+            // Sort by timestamp (newest first)
+            allRuns.sort((a, b) => b.timestamp - b.timestamp);
+            
+            showResults();
+            updateProfileUI();
+        }
+        
+        // Show profile selector modal
+        async function showProfileSelector(profiles, parsedRuns) {
+            return new Promise((resolve) => {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm';
+                modal.innerHTML = `
+                    <div class="glass-card rounded-2xl w-full max-w-md p-6">
+                        <h3 class="text-xl font-bold text-white mb-2">检测到多个存档</h3>
+                        <p class="text-sm text-slate-400 mb-6">请选择要加载的 Profile：</p>
+                        <div class="space-y-2 mb-6">
+                            ${profiles.map(p => `
+                                <button class="profile-select-btn w-full p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-spire-gold/50 transition-all text-left flex items-center gap-3" data-profile-id="${p.id}">
+                                    <div class="w-10 h-10 rounded-lg bg-spire-gold/20 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-spire-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-white">${p.name}</div>
+                                        <div class="text-xs text-slate-500">${parsedRuns.filter(r => r.profileId === p.id).length} 个存档</div>
+                                    </div>
+                                </button>
+                            `).join('')}
+                        </div>
+                        <button class="w-full py-3 rounded-lg bg-white/10 text-slate-300 hover:bg-white/15 transition-colors" onclick="this.closest('.fixed').remove()">
+                            取消
+                        </button>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // 隐藏 loading
+                loadingState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                
+                modal.querySelectorAll('.profile-select-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const profileId = btn.dataset.profileId;
+                        const profile = profiles.find(p => p.id === profileId);
+                        modal.remove();
+                        resolve(loadRunsForProfileData(parsedRuns, profile));
+                    });
+                });
+                
+                // 点击背景关闭
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.remove();
+                        resolve();
+                    }
+                });
+            });
+        }
+
+        // Analyze run data
+        function analyzeRun(data, filename) {
+            const timestamp = parseInt(filename.split('.')[0]);
+            
+            const analysis = {
+                filename: filename,
+                timestamp: timestamp,
+                date: new Date(timestamp * 1000).toLocaleDateString('zh-CN'),
+                time: new Date(timestamp * 1000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+                version: data.build_id || '未知版本',
+                mode: data.game_mode || 'standard',
+                ascension: data.ascension || 0,
+                seed: data.seed || null,
+                acts: data.acts || [],
+                victory: data.killed_by_encounter === 'NONE.NONE',
+                killed_by: null,
+                killed_by_name: null,
+                floor_reached: 0,
+                total_damage_taken: 0,
+                total_gold_gained: 0,
+                total_gold_spent: 0,
+                cards_collected: [],
+                relics_collected: [],
+                encounters: [],
+                floor_summary: [],
+            };
+
+            // Death info
+            if (!analysis.victory) {
+                const killed_by = data.killed_by_encounter;
+                if (killed_by && killed_by !== 'NONE.NONE') {
+                    analysis.killed_by = killed_by;
+                    analysis.killed_by_name = getMonsterName(killed_by);
+                }
+            }
+
+            // Map history analysis
+            const mapHistory = data.map_point_history || [];
+            let floorNum = 0;
+
+            for (const floorData of mapHistory) {
+                floorNum++;
+                analysis.floor_reached = floorNum;
+
+                for (const point of floorData) {
+                    let pointType = point.map_point_type || 'unknown';
+                    const rooms = point.rooms || [];
+                    const playerStats = point.player_stats?.[0] || {};
+
+                    // Infer type
+                    if (pointType === 'unknown' && rooms.length > 0) {
+                        const roomType = rooms[0].room_type || 'unknown';
+                        if (roomType === 'event') pointType = 'event';
+                        else if (['monster', 'elite', 'boss'].includes(roomType)) pointType = roomType;
+                        else if (roomType === 'shop') pointType = 'shop';
+                        else if (roomType === 'treasure') pointType = 'treasure';
+                        else if (['rest', 'rest_site'].includes(roomType)) pointType = 'rest';
+                    }
+
+                    const floorInfo = {
+                        floor: floorNum,
+                        type: pointType,
+                        hp: playerStats.current_hp || 0,
+                        max_hp: playerStats.max_hp || 0,
+                        gold: playerStats.current_gold || 0,
+                        damage_taken: playerStats.damage_taken || 0,
+                        rooms: []
+                    };
+
+                    analysis.total_damage_taken += playerStats.damage_taken || 0;
+                    analysis.total_gold_gained += playerStats.gold_gained || 0;
+                    analysis.total_gold_spent += playerStats.gold_spent || 0;
+
+                    // Collect upgraded cards info
+                    const upgradedCards = new Set();
+                    if (playerStats.upgraded_cards) {
+                        for (const upCard of playerStats.upgraded_cards) {
+                            if (typeof upCard === 'string') {
+                                upgradedCards.add(upCard.replace(/^CARD\./, ''));
+                            } else if (upCard.id) {
+                                upgradedCards.add(upCard.id.replace(/^CARD\./, ''));
+                            }
+                        }
+                    }
+                    
+                    // Collect cards
+                    for (const card of playerStats.cards_gained || []) {
+                        const cardId = card.id || '';
+                        const cardName = getCardName(cardId);
+                        // Check if this specific card instance is upgraded
+                        const isUpgraded = card.current_upgrade_level > 0 || upgradedCards.has(cardId.replace(/^CARD\./, ''));
+                        
+                        if (cardName && !analysis.cards_collected.some(c => c.name === cardName)) {
+                            analysis.cards_collected.push({
+                                id: cardId.replace(/^CARD\./, ''),
+                                name: cardName,
+                                image: getCardImage(cardId),
+                                upgraded: isUpgraded
+                            });
+                        }
+                    }
+
+                    // Collect relics
+                    for (const relic of playerStats.relic_choices || []) {
+                        if (relic.was_picked) {
+                            const relicId = relic.choice || '';
+                            const relicName = getRelicName(relicId);
+                            if (relicName && !analysis.relics_collected.some(r => r.name === relicName)) {
+                                analysis.relics_collected.push({
+                                    id: relicId.replace(/^RELIC\./, ''),
+                                    name: relicName,
+                                    image: getRelicImage(relicId)
+                                });
+                            }
+                        }
+                    }
+
+                    // Ancient choice relics
+                    for (const ancient of playerStats.ancient_choice || []) {
+                        if (ancient.was_chosen) {
+                            const relicName = getRelicName(ancient.TextKey || '');
+                            if (relicName && !analysis.relics_collected.some(r => r.name === relicName)) {
+                                analysis.relics_collected.push({
+                                    id: ancient.TextKey || '',
+                                    name: relicName,
+                                    image: getRelicImage(ancient.TextKey)
+                                });
+                            }
+                        }
+                    }
+
+                    // Analyze rooms
+                    for (const room of rooms) {
+                        const roomType = room.room_type || 'unknown';
+                        const modelId = room.model_id || '';
+                        const turns = room.turns_taken || 0;
+
+                        const roomInfo = { type: roomType, name_zh: null, turns };
+
+                        if (roomType === 'event') {
+                            roomInfo.name_zh = getEventName(modelId);
+                        } else if (['monster', 'elite', 'boss'].includes(roomType)) {
+                            roomInfo.name_zh = getMonsterName(modelId) || modelId?.replace(/^MONSTER\./, '').replace(/_/g, ' ');
+                            if (roomInfo.name_zh && !analysis.encounters.some(e => e.name === roomInfo.name_zh)) {
+                                analysis.encounters.push({
+                                    name: roomInfo.name_zh,
+                                    type: roomType,
+                                    floor: floorNum
+                                });
+                            }
+                        } else if (roomType === 'shop') {
+                            roomInfo.name_zh = '商店';
+                        } else if (roomType === 'treasure') {
+                            roomInfo.name_zh = '宝箱';
+                        } else if (['rest', 'rest_site'].includes(roomType)) {
+                            roomInfo.name_zh = '休息处';
+                        } else {
+                            roomInfo.name_zh = getEventName(modelId);
+                        }
+
+                        floorInfo.rooms.push(roomInfo);
+                    }
+
+                    analysis.floor_summary.push(floorInfo);
+                }
+            }
+
+            return analysis;
+        }
+
+        // Show results
+        function showResults() {
+            uploadSection.classList.add('hidden');
+            statsPanel.classList.remove('hidden');
+            filters.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            loadingState.classList.add('hidden');
+            
+            updateStats();
+            renderRuns();
+        }
+
+        // Update stats
+        function updateStats() {
+            // 防御性检查
+            if (!allRuns || !Array.isArray(allRuns) || allRuns.length === 0) {
+                document.getElementById('totalGames').textContent = '0';
+                document.getElementById('winRate').textContent = '0%';
+                document.getElementById('avgFloor').textContent = '0';
+                document.getElementById('avgRelics').textContent = '0';
+                return;
+            }
+            
+            const total = allRuns.length;
+            const victories = allRuns.filter(r => r.victory).length;
+            
+            document.getElementById('totalGames').textContent = total;
+            document.getElementById('winRate').textContent = total > 0 ? ((victories / total) * 100).toFixed(1) + '%' : '0%';
+            document.getElementById('avgFloor').textContent = total > 0 ? (allRuns.reduce((a, b) => a + (b.floor_reached || 0), 0) / total).toFixed(1) : '0';
+            document.getElementById('avgRelics').textContent = total > 0 ? (allRuns.reduce((a, b) => a + ((b.relics_collected || []).length), 0) / total).toFixed(1) : '0';
+        }
+
+        // Render runs
+        function renderRuns() {
+            // Update view buttons
+            updateViewButtons();
+            
+            // 防御性检查
+            if (!allRuns || !Array.isArray(allRuns)) {
+                cardsContainer.innerHTML = `
+                    <div class="text-center py-12">
+                        <p class="text-slate-500">数据加载中...</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let filtered = allRuns;
+            if (currentFilter === 'victory') filtered = allRuns.filter(r => r.victory);
+            if (currentFilter === 'defeat') filtered = allRuns.filter(r => !r.victory);
+
+            if (filtered.length === 0) {
+                cardsContainer.innerHTML = `
+                    <div class="text-center py-12">
+                        <p class="text-slate-500">没有找到符合条件的存档</p>
+                    </div>
+                `;
+                return;
+            }
+
+            cardsContainer.innerHTML = filtered.map((run, index) => createRunCard(run, index)).join('');
+            
+            // Add click handlers
+            document.querySelectorAll('.run-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const filename = card.dataset.filename;
+                    const run = allRuns.find(r => r.filename === filename);
+                    if (run) showDetail(run);
+                });
+            });
+        }
+
+        // Create run card HTML
+        function createRunCard(run, index) {
+            // 防御性默认值
+            if (!run) return '<div class="p-4 text-red-400">Error: Invalid run data</div>';
+            
+            const isVictory = run.victory;
+            const statusColor = isVictory ? 'spire-teal' : 'spire-crimson';
+            const statusBg = isVictory ? 'bg-spire-teal/10' : 'bg-spire-crimson/10';
+            const statusBorder = isVictory ? 'border-spire-teal/30' : 'border-spire-crimson/30';
+            const statusText = isVictory ? '胜利' : '失败';
+            
+            // 安全获取数组属性
+            const relicsCollected = run.relics_collected || [];
+            const cardsCollected = run.cards_collected || [];
+            const encounters = run.encounters || [];
+            const date = run.date || '';
+            const time = run.time || '';
+            const floorReached = run.floor_reached || 0;
+            const ascension = run.ascension || 0;
+            const seed = run.seed || '';
+            
+            // Relics preview (max 6)
+            const relicsPreview = relicsCollected.slice(0, 6).map(r => `
+                <div class="item-icon w-10 h-10 rounded-lg bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden cursor-pointer"
+                     onmouseenter="showTooltip(event, '${r.name}', '${r.id || r.name}', false)"
+                     onmouseleave="hideTooltip()"
+                     onmousemove="updateTooltipPosition(event)">
+                    ${r.image ? `<img src="${r.image}" alt="${r.name}" class="w-full h-full object-contain" onerror="this.style.display='none'">` : 
+                    `<span class="text-xs text-slate-500">?</span>`}
+                </div>
+            `).join('');
+            
+            const moreRelics = relicsCollected.length > 6 ? 
+                `<div class="w-10 h-10 rounded-lg bg-spire-gold/10 border border-spire-gold/30 flex items-center justify-center text-xs text-spire-gold font-medium">+${relicsCollected.length - 6}</div>` : '';
+            
+            // Elite/Boss encounters
+            const keyEncounters = encounters
+                .filter(e => e.type === 'boss' || e.type === 'elite')
+                .slice(0, 3);
+            
+            const encountersHtml = keyEncounters.map(e => `
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs ${e.type === 'boss' ? 'bg-spire-crimson/10 text-spire-crimson border border-spire-crimson/30' : 'bg-spire-gold/10 text-spire-gold border border-spire-gold/30'}">
+                    ${e.type === 'boss' ? 
+                        `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>` : 
+                        `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M13.5 4.938a7 7 0 11-9.006 1.737c.202-.257.59-.218.793.08a5.002 5.002 0 009.219 1.411c.205-.29.6-.29.795-.005A7 7 0 0113.5 4.938zM14 14a2 2 0 11-4 0 2 2 0 014 0z" clip-rule="evenodd"/></svg>`}
+                    ${e.name}
+                </span>
+            `).join('');
+
+            return `
+                <div class="run-card glass-card glass-card-hover ${isVictory ? 'victory' : 'defeat'} rounded-xl p-5 cursor-pointer transition-all duration-200 animate-slide-in" 
+                     data-filename="${run.filename}"
+                     style="animation-delay: ${index * 50}ms">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <!-- Left: Date & Status -->
+                        <div class="flex items-center gap-4">
+                            <div class="text-center min-w-[60px]">
+                                <div class="text-2xl font-bold text-white">${date ? (date.split('/')[2] || date.split('-')[2]) : '--'}</div>
+                                <div class="text-xs text-slate-400">${date ? (date.split('/')[0] || date.split('-')[0]) + '/' + (date.split('/')[1] || date.split('-')[1]) : '--/--'}</div>
+                            </div>
+                            <div class="h-10 w-px bg-white/10 hidden sm:block"></div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${statusBg} ${statusBorder} text-${statusColor}">
+                                        ${isVictory ? 
+                                            `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>` :
+                                            `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>`}
+                                        ${statusText}
+                                    </span>
+                                    <span class="text-xs text-slate-500">${time}</span>
+                                </div>
+                                <div class="flex items-center gap-3 mt-1 text-sm text-slate-400 flex-wrap">
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                        </svg>
+                                        第 ${floorReached} 层
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                                        </svg>
+                                        进阶 ${ascension}
+                                    </span>
+                                    ${seed ? `
+                                    <span class="flex items-center gap-1" title="分享码: ${seed}">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        <code class="text-xs font-mono text-spire-gold/80">${seed.substring(0, 6)}...</code>
+                                    </span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right: Stats -->
+                        <div class="flex items-center gap-6 text-sm">
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-spire-purple-light">${relicsCollected.length}</div>
+                                <div class="text-xs text-slate-500">遗物</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-blue-400">${cardsCollected.length}</div>
+                                <div class="text-xs text-slate-500">卡牌</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Relics Preview -->
+                    <div class="mt-4 pt-4 border-t border-white/5">
+                        <div class="flex items-center gap-2">
+                            <div class="flex-1 flex items-center gap-2">
+                                ${relicsPreview}
+                                ${moreRelics}
+                            </div>
+                            ${encountersHtml ? `<div class="flex items-center gap-1">${encountersHtml}</div>` : ''}
+                        </div>
+                    </div>
+                    
+                    <!-- Cards Preview (show upgraded cards) -->
+                    ${cardsCollected.some(c => c.upgraded) ? `
+                    <div class="mt-2">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            ${cardsCollected.filter(c => c.upgraded).slice(0, 8).map(c => `
+                                <div class="item-icon w-8 h-11 rounded bg-black/30 border border-spire-gold/30 flex items-center justify-center overflow-hidden cursor-pointer"
+                                     onmouseenter="showTooltip(event, '${c.name}', '${c.id || c.name}', true, true)"
+                                     onmouseleave="hideTooltip()"
+                                     onmousemove="updateTooltipPosition(event)">
+                                    ${c.image ? `<img src="${c.image}" alt="${c.name}+" class="w-full h-full object-contain p-0.5" onerror="this.style.display='none'">` : 
+                                    `<span class="text-[10px] text-spire-gold">+</span>`}
+                                </div>
+                            `).join('')}
+                            ${cardsCollected.filter(c => c.upgraded).length > 8 ? 
+                                `<div class="w-8 h-11 rounded bg-spire-gold/10 border border-spire-gold/30 flex items-center justify-center text-[10px] text-spire-gold">+${cardsCollected.filter(c => c.upgraded).length - 8}</div>` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Show detail modal
+        function showDetail(run) {
+            const isVictory = run.victory;
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalTitle.innerHTML = `
+                <div class="flex flex-col items-start">
+                    <div class="flex items-center">
+                        <span class="${isVictory ? 'text-spire-teal' : 'text-spire-crimson'}">
+                            ${isVictory ? 
+                                `<svg class="w-6 h-6 inline mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>` :
+                                `<svg class="w-6 h-6 inline mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>`}
+                            ${isVictory ? '胜利' : '失败'}
+                        </span>
+                        <span class="text-slate-400 text-base font-normal ml-2">${run.date} ${run.time}</span>
+                    </div>
+                    ${run.seed ? `
+                    <div class="mt-1 flex items-center gap-2 text-sm">
+                        <span class="text-slate-500">分享码:</span>
+                        <code class="px-2 py-0.5 rounded bg-spire-gold/10 text-spire-gold font-mono text-xs cursor-pointer hover:bg-spire-gold/20" onclick="navigator.clipboard.writeText('${run.seed}')">${run.seed}</code>
+                        <span class="text-xs text-slate-600">(点击复制)</span>
+                    </div>
+                    ` : ''}
+                </div>
+                <button id="shareBtn" class="ml-4 p-2 rounded-lg bg-spire-gold/20 text-spire-gold hover:bg-spire-gold/30 transition-colors" title="分享">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                    </svg>
+                </button>
+            `;
+            
+            // Death info
+            const deathInfo = !isVictory && run.killed_by_name ? `
+                <div class="mb-6 p-4 rounded-xl bg-spire-crimson/10 border border-spire-crimson/30 flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-xl bg-spire-crimson/20 flex items-center justify-center">
+                        <svg class="w-7 h-7 text-spire-crimson" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-.464 5.535a1 1 0 10-1.415-1.414 3 3 0 01-4.242 0 1 1 0 00-1.415 1.414 5 5 0 007.072 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-sm text-slate-400">被击败于</div>
+                        <div class="text-lg font-bold text-spire-crimson">${run.killed_by_name}</div>
+                    </div>
+                </div>
+            ` : '';
+            
+            // Relics grid
+            const relicsGrid = run.relics_collected.map(r => `
+                <div class="text-center cursor-pointer"
+                     onmouseenter="showTooltip(event, '${r.name}', '${r.id || r.name}', false)"
+                     onmouseleave="hideTooltip()"
+                     onmousemove="updateTooltipPosition(event)">
+                    <div class="w-16 h-16 mx-auto rounded-xl bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden hover:border-spire-gold/50 transition-colors">
+                        ${r.image ? `<img src="${r.image}" alt="${r.name}" class="w-full h-full object-contain p-1" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\\'text-xs text-slate-500\\'>?</span>'">` : '<span class="text-xs text-slate-500">?</span>'}
+                    </div>
+                    <div class="text-xs text-slate-400 mt-1 truncate max-w-[70px]">${r.name}</div>
+                </div>
+            `).join('') || '<div class="text-slate-500 text-sm">无遗物</div>';
+            
+            // Cards grid
+            const cardsGrid = run.cards_collected.map(c => {
+                const upgradeMark = c.upgraded ? '<span class="text-spire-gold">+</span>' : '';
+                const borderClass = c.upgraded ? 'border-spire-gold/50 shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'border-white/10';
+                return `
+                <div class="text-center cursor-pointer"
+                     onmouseenter="showTooltip(event, '${c.name}', '${c.id || c.name}', true, ${c.upgraded || false})"
+                     onmouseleave="hideTooltip()"
+                     onmousemove="updateTooltipPosition(event)">
+                    <div class="w-14 h-20 mx-auto rounded-lg bg-black/30 border ${borderClass} flex items-center justify-center overflow-hidden hover:border-spire-gold/50 transition-colors">
+                        ${c.image ? `<img src="${c.image}" alt="${c.name}" class="w-full h-full object-contain p-1" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\\'text-xs text-slate-500\\'>?</span>'">` : '<span class="text-xs text-slate-500">?</span>'}
+                    </div>
+                    <div class="text-xs text-slate-400 mt-1 truncate max-w-[60px]">${c.name}${upgradeMark}</div>
+                </div>
+            `}).join('') || '<div class="text-slate-500 text-sm">无卡牌</div>';
+            
+            // Timeline
+            const timelineHtml = run.floor_summary.map(f => {
+                const typeIcons = {
+                    ancient: ['🗿', '远古遗迹', 'text-purple-400'],
+                    monster: ['⚔️', '普通战斗', 'text-spire-crimson'],
+                    elite: ['👹', '精英战斗', 'text-spire-gold'],
+                    boss: ['💀', 'Boss战', 'text-spire-crimson glow-crimson'],
+                    shop: ['🛒', '商店', 'text-spire-purple-light'],
+                    treasure: ['📦', '宝箱', 'text-blue-400'],
+                    rest: ['🔥', '休息处', 'text-spire-teal'],
+                    event: ['❓', '事件', 'text-blue-400']
+                };
+                const [icon, label, colorClass] = typeIcons[f.type] || ['•', f.type, 'text-slate-400'];
+                
+                // 支持两种数据格式：完整存档(f.rooms)和分享码(f.rooms简化版)
+                const roomsHtml = f.rooms.map(r => {
+                    // 分享码格式: {name, damage_taken, hp_after, killed, image}
+                    // 完整存档格式: {name_zh, turns}
+                    const name = r.name_zh || r.name || '未知';
+                    const turns = r.turns ? ` (${r.turns}回合)` : '';
+                    const damage = r.damage_taken ? ` <span class="text-spire-crimson">-${r.damage_taken}HP</span>` : '';
+                    const hp = r.hp_after !== undefined ? ` <span class="text-spire-teal">剩余${r.hp_after}HP</span>` : '';
+                    
+                    // 显示房间图片（如果有）
+                    const imageHtml = r.image ? `
+                        <div class="w-8 h-8 rounded bg-black/30 border border-white/10 flex items-center justify-center overflow-hidden mr-2 flex-shrink-0">
+                            <img src="${r.image}" alt="${name}" class="w-full h-full object-contain p-0.5" onerror="this.style.display='none'">
+                        </div>
+                    ` : '';
+                    const killed = r.killed ? ' <span class="text-spire-gold">✓</span>' : '';
+                    return `<div class="flex items-center text-xs text-slate-400">${imageHtml}<span>${name}${turns}${damage}${hp}${killed}</span></div>`;
+                }).join('');
+                
+                // 分享码没有hp/max_hp/gold字段
+                const hasStats = f.hp !== undefined && f.max_hp !== undefined;
+                const statsHtml = hasStats ? `
+                    <div class="flex items-center gap-4 mt-1 text-xs">
+                        <span class="text-spire-teal">${f.hp}/${f.max_hp} HP</span>
+                        <span class="text-spire-gold">${f.gold || 0} G</span>
+                        ${f.damage_taken > 0 ? `<span class="text-spire-crimson">-${f.damage_taken}</span>` : ''}
+                    </div>
+                ` : '';
+                
+                return `
+                    <div class="timeline-item ${f.type} pb-4 last:pb-0">
+                        <div class="flex items-start gap-3">
+                            <div class="min-w-[50px] text-xs text-slate-500 font-mono">F${f.floor}</div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium ${colorClass}">${icon} ${label}</div>
+                                ${roomsHtml ? `<div class="mt-1">${roomsHtml}</div>` : ''}
+                                ${statsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Key encounters
+            const encountersDetailHtml = run.encounters
+                .filter(e => e.type === 'boss' || e.type === 'elite')
+                .map(e => `
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${e.type === 'boss' ? 'bg-spire-crimson/10 border border-spire-crimson/30 text-spire-crimson' : 'bg-spire-gold/10 border border-spire-gold/30 text-spire-gold'}">
+                        ${e.type === 'boss' ? 
+                            `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>` : 
+                            `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M13.5 4.938a7 7 0 11-9.006 1.737c.202-.257.59-.218.793.08a5.002 5.002 0 009.219 1.411c.205-.29.6-.29.795-.005A7 7 0 0113.5 4.938zM14 14a2 2 0 11-4 0 2 2 0 014 0z" clip-rule="evenodd"/></svg>`}
+                        <span class="text-sm font-medium">第${e.floor}层 · ${e.name}</span>
+                    </div>
+                `).join('') || '<div class="text-slate-500 text-sm">无重要战斗</div>';
+            
+            modalBody.innerHTML = `
+                ${deathInfo}
+                
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                    <div class="p-3 rounded-lg bg-white/5 text-center">
+                        <div class="text-lg font-bold text-white">${run.floor_reached}</div>
+                        <div class="text-xs text-slate-500">到达层数</div>
+                    </div>
+                    <div class="p-3 rounded-lg bg-white/5 text-center">
+                        <div class="text-lg font-bold text-spire-gold">${run.ascension}</div>
+                        <div class="text-xs text-slate-500">进阶等级</div>
+                    </div>
+                    <div class="p-3 rounded-lg bg-white/5 text-center">
+                        <div class="text-lg font-bold text-spire-purple-light">${run.total_gold_gained}</div>
+                        <div class="text-xs text-slate-500">获得金币</div>
+                    </div>
+                    <div class="p-3 rounded-lg bg-white/5 text-center">
+                        <div class="text-lg font-bold text-spire-crimson">${run.total_damage_taken}</div>
+                        <div class="text-xs text-slate-500">受到伤害</div>
+                    </div>
+                </div>
+                
+                <!-- Relics -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-spire-purple-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+                        </svg>
+                        遗物 (${run.relics_collected.length})
+                    </h3>
+                    <div class="flex flex-wrap gap-3">
+                        ${relicsGrid}
+                    </div>
+                </div>
+                
+                <!-- Cards -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        卡牌 (${run.cards_collected.length})
+                    </h3>
+                    <div class="flex flex-wrap gap-3">
+                        ${cardsGrid}
+                    </div>
+                </div>
+                
+                <!-- Key Encounters -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-spire-crimson" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        重要战斗
+                    </h3>
+                    <div class="flex flex-wrap gap-2">
+                        ${encountersDetailHtml}
+                    </div>
+                </div>
+                
+                <!-- Timeline -->
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-spire-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        探险日志
+                    </h3>
+                    <div class="pl-2">
+                        ${timelineHtml}
+                    </div>
+                </div>
+            `;
+            
+            detailModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // 绑定分享按钮
+            setTimeout(() => {
+                const shareBtn = document.getElementById('shareBtn');
+                if (shareBtn) {
+                    shareBtn.addEventListener('click', () => shareRun(run));
+                }
+            }, 0);
+        }
+
+        // Close modal
+        function closeModal() {
+            detailModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // Seed modal functions
+        function openSeedModal() {
+            const modal = document.getElementById('seedModal');
+            const input = document.getElementById('seedInput');
+            const error = document.getElementById('seedError');
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            error.classList.add('hidden');
+            input.value = '';
+            
+            // Focus input after animation
+            setTimeout(() => input.focus(), 100);
+        }
+        
+        function closeSeedModal() {
+            const modal = document.getElementById('seedModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        async function submitSeed() {
+            const input = document.getElementById('seedInput');
+            const error = document.getElementById('seedError');
+            // 清理输入：去除所有空白字符（包括换行）
+            const seed = input.value.replace(/\s/g, '');
+            
+            if (!seed) return;
+            
+            // 确保游戏数据已加载
+            if (!GAME_DATA_CACHE) {
+                await loadGameData();
+            }
+            
+            const run = loadFromSeed(seed);
+            if (!run) {
+                error.classList.remove('hidden');
+                input.classList.add('border-spire-crimson');
+                return;
+            }
+            
+            run.source = 'shared'; // 标记来源
+            sharedRuns.unshift(run); // 添加到开头
+            saveSharedRuns(); // 保存到缓存
+            currentView = 'shared';
+            updateAllRuns();
+            
+            uploadSection.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            filters.classList.remove('hidden');
+            statsPanel.classList.remove('hidden');
+            
+            closeSeedModal();
+            renderRuns();
+            updateStats(); // 更新统计数据
+        }
+        
+        // Close seed modal on backdrop click
+        document.getElementById('seedModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('seedModal')) {
+                closeSeedModal();
+            }
+        });
+        
+        // Submit on Enter key
+        document.getElementById('seedInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submitSeed();
+            }
+        });
+
+        // Show loading
+        function showLoading() {
+            emptyState.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            cardsContainer.innerHTML = '';
+        }
+
+        // Show error
+        function showError(msg) {
+            emptyState.classList.remove('hidden');
+            loadingState.classList.add('hidden');
+            emptyState.innerHTML = `
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-spire-crimson/10 flex items-center justify-center">
+                    <svg class="w-8 h-8 text-spire-crimson" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <p class="text-spire-crimson">${msg}</p>
+            `;
+        }
+
+        // Expose closeModal globally
+        window.closeModal = closeModal;
+        
+        // Expose view functions globally
+        window.switchView = switchView;
+        window.switchProfile = switchProfile;
+        window.clearCurrentViewCache = clearCurrentViewCache;
+        
+        // Expose tooltip functions globally
+        window.showTooltip = showTooltip;
+        window.hideTooltip = hideTooltip;
+        window.updateTooltipPosition = updateTooltipPosition;
+    </script>
+</body>
+</html>
