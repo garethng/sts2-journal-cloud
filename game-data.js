@@ -1,6 +1,6 @@
 // 游戏数据 - 由 spire-codex 生成
 // 图片源配置 - 使用图床自定义域名
-const IMAGE_BASE_URL = 'https://pic.wuqingzhe.cn/images';
+const IMAGE_BASE_URL = 'http://pic.wuqingzhe.cn/images';
 
 const GAME_DATA = {
     cards: {
