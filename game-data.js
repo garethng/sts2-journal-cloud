@@ -1,6 +1,6 @@
 // 游戏数据 - 由 spire-codex 生成
-// 图片源配置 - 使用 Cloudflare R2 自定义域名
-const IMAGE_BASE_URL = 'https://slay.echopie.com/images';
+// 图片源配置 - 使用图床自定义域名
+const IMAGE_BASE_URL = 'https://pic.wuqingzhe.cn/images';
 
 const GAME_DATA = {
     cards: {
