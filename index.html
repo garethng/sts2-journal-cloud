@@ -359,8 +359,10 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                 </svg>
-                                自动检测本地存档
+                                <span id="autoDetectBtnText">自动检测本地存档</span>
                             </button>
+                            <!-- 隐藏的文件夹选择 input -->
+                            <input type="file" id="folderInput" webkitdirectory directory multiple class="hidden">
                             <a id="openFolderWin" href="#" class="btn-secondary inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-medium text-slate-300">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/>
@@ -368,8 +370,28 @@
                                 打开存档文件夹
                             </a>
                         </div>
+                        <div class="mt-3 p-4 rounded-xl bg-white/5 border border-white/10">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-spire-gold flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div class="text-sm text-slate-400 flex-1">
+                                    <p class="mb-2"><span class="text-slate-300 font-medium">快速打开：</span>点击复制路径，然后在文件资源管理器地址栏粘贴并回车</p>
+                                    <div class="flex gap-2">
+                                        <code id="winPath" class="flex-1 p-2 rounded-lg bg-black/30 text-xs text-slate-300 font-mono break-all">%AppData%\\..\\LocalLow\\Mega Crit\\SlayTheSpire2</code>
+                                        <button id="copyWinPathBtn" onclick="copyWinPath()" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-xs text-slate-300 transition-colors flex items-center gap-1">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                            </svg>
+                                            复制
+                                        </button>
+                                    </div>
+                                    <p class="mt-2 text-xs text-slate-500">然后选中所有 .run 文件拖拽到上方区域，或点击上方按钮打开文件夹</p>
+                                </div>
+                            </div>
+                        </div>
                         <p class="mt-3 text-xs text-center text-slate-500">
-                            自动检测需要浏览器支持，或手动拖拽文件到上方区域
+                            <span id="autoDetectHint">自动检测需要浏览器支持，或手动拖拽文件到上方区域</span>
                         </p>
                     </div>
                     
@@ -2155,37 +2177,58 @@
         // Windows controls
         function setupWindowsControls() {
             const autoDetectBtn = document.getElementById('autoDetectBtn');
+            const autoDetectBtnText = document.getElementById('autoDetectBtnText');
+            const autoDetectHint = document.getElementById('autoDetectHint');
+            const folderInput = document.getElementById('folderInput');
             const openFolderWin = document.getElementById('openFolderWin');
+            const winPathEl = document.getElementById('winPath');
             
-            // Auto detect button
-            autoDetectBtn.addEventListener('click', async () => {
-                if ('showDirectoryPicker' in window) {
+            // 检查是否支持 File System Access API
+            const supportsFileSystemAccess = 'showDirectoryPicker' in window;
+            
+            // 如果不支持，使用 webkitdirectory 降级方案
+            if (!supportsFileSystemAccess) {
+                if (autoDetectBtnText) autoDetectBtnText.textContent = '选择存档文件夹';
+                if (autoDetectHint) autoDetectHint.textContent = '点击选择包含 .run 文件的文件夹，或拖拽文件到上方区域';
+                
+                // 使用传统的文件夹选择
+                autoDetectBtn.addEventListener('click', () => {
+                    folderInput.click();
+                });
+                
+                // 处理文件夹选择
+                folderInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                        handleFiles(e.target.files);
+                    }
+                });
+            } else {
+                // 使用 File System Access API
+                autoDetectBtn.addEventListener('click', async () => {
                     try {
                         const dirHandle = await window.showDirectoryPicker();
                         await processDirectory(dirHandle);
                     } catch (err) {
-                        console.log('用户取消了选择');
+                        if (err.name === 'AbortError') {
+                            console.log('用户取消了选择');
+                        } else if (err.name === 'SecurityError') {
+                            alert('安全限制：请在 localhost 或 HTTPS 环境下使用此功能\n\n替代方案：\n1. 直接拖拽存档文件夹到页面\n2. 点击上传区域选择文件');
+                        } else {
+                            console.error('选择文件夹失败:', err);
+                            alert('无法访问文件夹: ' + err.message + '\n\n请尝试拖拽文件夹到页面上传');
+                        }
                     }
-                } else {
-                    alert('您的浏览器不支持自动检测功能，请使用拖拽或点击上传文件');
-                }
-            });
+                });
+            }
             
             // Open folder link
             const winPath = '%AppData%\\..\\LocalLow\\Mega Crit\\SlayTheSpire2';
+            if (winPathEl) winPathEl.textContent = winPath;
             openFolderWin.href = `file:///${winPath.replace(/\\/g, '/')}`;
             openFolderWin.addEventListener('click', (e) => {
                 e.preventDefault();
-                // Try to open via explorer
-                const shell = new ActiveXObject('WScript.Shell');
-                if (shell) {
-                    shell.Run(`explorer.exe "${winPath}"`);
-                } else {
-                    // Fallback: copy path to clipboard
-                    navigator.clipboard.writeText(winPath).then(() => {
-                        alert('路径已复制到剪贴板，请在文件资源管理器中粘贴地址栏');
-                    });
-                }
+                copyWinPath();
+                alert('路径已复制到剪贴板，请在文件资源管理器地址栏粘贴并回车');
             });
         }
         
@@ -2225,6 +2268,31 @@
                 }, 2000);
             });
         }
+
+        // Copy Windows path
+        function copyWinPath() {
+            const path = document.getElementById('winPath')?.textContent || '';
+            if (!path) return;
+            navigator.clipboard.writeText(path).then(() => {
+                const btn = document.getElementById('copyWinPathBtn');
+                if (!btn) return;
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = `
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    已复制
+                `;
+                btn.classList.add('text-spire-teal');
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('text-spire-teal');
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('存档路径：\n' + path + '\n\n请手动复制此路径到文件资源管理器');
+            });
+        }
         
         // Process directory (if user manages to select one)
         async function processDirectory(dirHandle) {
@@ -2257,6 +2325,23 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeModal();
         });
+        
+        // Browser capability detection
+        console.log('[Browser] User Agent:', navigator.userAgent);
+        console.log('[Browser] showDirectoryPicker support:', 'showDirectoryPicker' in window);
+        console.log('[Browser] Protocol:', location.protocol);
+        console.log('[Browser] Hostname:', location.hostname);
+        console.log('[Browser] Is Secure Context:', window.isSecureContext);
+        
+        // Edge 版本检测
+        const edgeMatch = navigator.userAgent.match(/Edg\/(\d+)/);
+        if (edgeMatch) {
+            console.log('[Browser] Edge version:', edgeMatch[1]);
+        }
+        const chromeMatch = navigator.userAgent.match(/Chrome\/(\d+)/);
+        if (chromeMatch) {
+            console.log('[Browser] Chrome version:', chromeMatch[1]);
+        }
         
         // Initialize OS-specific controls
         initOSControls();
