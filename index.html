@@ -341,12 +341,12 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-white mb-2">拖拽存档文件到此处</h3>
-                    <p class="text-slate-400 mb-6">或点击选择多个 .run 文件</p>
+                    <h3 class="text-xl font-semibold text-white mb-2">拖拽存档文件或文件夹到此处</h3>
+                    <p class="text-slate-400 mb-6">或点击选择文件 / 点击下方按钮选择文件夹</p>
                     <div class="flex flex-wrap justify-center gap-2 text-xs text-slate-500">
-                        <span class="px-2 py-1 rounded bg-white/5">支持多文件</span>
+                        <span class="px-2 py-1 rounded bg-white/5">支持文件夹</span>
+                        <span class="px-2 py-1 rounded bg-white/5">自动遍历子文件夹</span>
                         <span class="px-2 py-1 rounded bg-white/5">.run 格式</span>
-                        <span class="px-2 py-1 rounded bg-white/5">自动解析</span>
                     </div>
                 </div>
                 
@@ -376,9 +376,9 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                                 <div class="text-sm text-slate-400 flex-1">
-                                    <p class="mb-2"><span class="text-slate-300 font-medium">快速打开：</span>点击复制路径，然后在文件资源管理器地址栏粘贴并回车</p>
+                                    <p class="mb-2"><span class="text-slate-300 font-medium">本地存档路径：</span>点击复制路径，然后在文件资源管理器地址栏粘贴并回车</p>
                                     <div class="flex gap-2">
-                                        <code id="winPath" class="flex-1 p-2 rounded-lg bg-black/30 text-xs text-slate-300 font-mono break-all">%AppData%\\..\\LocalLow\\Mega Crit\\SlayTheSpire2</code>
+                                        <code id="winPath" class="flex-1 p-2 rounded-lg bg-black/30 text-xs text-slate-300 font-mono break-all">%AppData%\Roaming\SlayTheSpire2\steam</code>
                                         <button id="copyWinPathBtn" onclick="copyWinPath()" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-xs text-slate-300 transition-colors flex items-center gap-1">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -386,7 +386,8 @@
                                             复制
                                         </button>
                                     </div>
-                                    <p class="mt-2 text-xs text-slate-500">然后选中所有 .run 文件拖拽到上方区域，或点击上方按钮打开文件夹</p>
+                                    <p class="mt-2 text-xs text-slate-500">Steam云存档路径：Steam\userdata\[你的SteamID]\2868840\remote\profile_1\saves\</p>
+                                    <p class="mt-1 text-xs text-slate-500">然后选中所有 .run 文件拖拽到上方区域，或点击上方按钮打开文件夹</p>
                                 </div>
                             </div>
                         </div>
@@ -2109,10 +2110,17 @@
         function traverseFileTree(item, files) {
             return new Promise((resolve) => {
                 if (item.isFile) {
-                    item.file((file) => {
-                        files.push(file);
+                    // 只收集 .run 文件
+                    if (item.name.endsWith('.run')) {
+                        item.file((file) => {
+                            // 保留完整路径信息
+                            file.path = item.fullPath || item.name;
+                            files.push(file);
+                            resolve();
+                        });
+                    } else {
                         resolve();
-                    });
+                    }
                 } else if (item.isDirectory) {
                     const dirReader = item.createReader();
                     dirReader.readEntries((entries) => {
@@ -2186,11 +2194,12 @@
             // 检查是否支持 File System Access API
             const supportsFileSystemAccess = 'showDirectoryPicker' in window;
             
+            // 统一按钮文字：都叫"选择存档文件夹"
+            if (autoDetectBtnText) autoDetectBtnText.textContent = '选择存档文件夹';
+            if (autoDetectHint) autoDetectHint.textContent = '点击选择包含 .run 文件的文件夹（支持子文件夹自动遍历）';
+            
             // 如果不支持，使用 webkitdirectory 降级方案
             if (!supportsFileSystemAccess) {
-                if (autoDetectBtnText) autoDetectBtnText.textContent = '选择存档文件夹';
-                if (autoDetectHint) autoDetectHint.textContent = '点击选择包含 .run 文件的文件夹，或拖拽文件到上方区域';
-                
                 // 使用传统的文件夹选择
                 autoDetectBtn.addEventListener('click', () => {
                     folderInput.click();
@@ -2203,7 +2212,7 @@
                     }
                 });
             } else {
-                // 使用 File System Access API
+                // 使用 File System Access API（支持递归遍历）
                 autoDetectBtn.addEventListener('click', async () => {
                     try {
                         const dirHandle = await window.showDirectoryPicker();
@@ -2222,7 +2231,7 @@
             }
             
             // Open folder link
-            const winPath = '%AppData%\\..\\LocalLow\\Mega Crit\\SlayTheSpire2';
+            const winPath = '%AppData%\\Roaming\\SlayTheSpire2\\steam';
             if (winPathEl) winPathEl.textContent = winPath;
             openFolderWin.href = `file:///${winPath.replace(/\\/g, '/')}`;
             openFolderWin.addEventListener('click', (e) => {
@@ -2295,15 +2304,23 @@
         }
         
         // Process directory (if user manages to select one)
-        async function processDirectory(dirHandle) {
-            const files = [];
+        async function processDirectory(dirHandle, files = []) {
             for await (const entry of dirHandle.values()) {
                 if (entry.kind === 'file' && entry.name.endsWith('.run')) {
                     const file = await entry.getFile();
+                    // 保留完整路径信息用于 profile 检测
+                    file.path = dirHandle.name + '/' + entry.name;
                     files.push(file);
+                } else if (entry.kind === 'directory') {
+                    // 递归遍历子文件夹
+                    await processDirectory(entry, files);
                 }
             }
-            handleFiles(files);
+            // 只在顶层调用时处理文件
+            if (arguments.length === 1) {
+                handleFiles(files);
+            }
+            return files;
         }
 
         // Filter buttons
